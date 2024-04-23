@@ -11,7 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "*",
-    "express": "*",
-    "mongoose": "*"
+    "express": "^4.19.2",
+    "mongoose": "^8.3.2",
+    "nodemon": "^3.1.0"
   }
 }
