@@ -6,6 +6,7 @@ Add design docs in *images/*
 - In server directory run: ```npm install express```
 - In server directory run: ```npm install mongoose```
 - In server directory run: ```npm install nodemon```
+- In server directory run: ```npm install cors```
 - In client directory run: ```npm install axios```
 
 
