@@ -1,7 +1,7 @@
 import '../stylesheets/App.css';
 
 import Menu from './Menu.js';
-import QuestionsPage from './QuestionsPageHeader.js';
+import QuestionsPage from './QuestionsPage.js';
 import TagsPage from './TagsPage.js';
 import AnswersPage from './AnswersPage.js';
 import NewAnswerForm from './NewAnswerForm.js';

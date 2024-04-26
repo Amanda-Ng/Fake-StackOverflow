@@ -1,5 +1,5 @@
 import '../stylesheets/App.css';
-import Question from './Question';
+import Question from './Question.js';
 
 export default function QuestionsPageList(props) {
   const formattedQList = formatQuestions(props);
