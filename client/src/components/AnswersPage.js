@@ -13,6 +13,8 @@ export default function AnswersPage(props) {
         views: 0,
       });
   const [answers, setAnswers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const answersPerPage = 5;
 
   const qid = props.qid;
 
@@ -38,18 +40,17 @@ export default function AnswersPage(props) {
       });
   }, [qid]);
 
-    // Sort answers by descending date
-    const sortedAnswers = question.answers.sort((a, b) => new Date(b.ans_date_time) - new Date(a.ans_date_time));
+      // Sort answers by descending date
+      const sortedAnswers = question.answers.sort((a, b) => new Date(b.ans_date_time) - new Date(a.ans_date_time));
 
-  const mappedAList = sortedAnswers.map(answer => (
-    <div key={answer._id} className="qAnsStyle">
-      <p className="ansTextStyle" dangerouslySetInnerHTML={renderHyperlinks(answer.text)}></p>
-      <span>
-        <span className="aUser">{answer.ans_by}</span>
-        <div> answered {formatTime(answer.ans_date_time)}</div>
-      </span>
-    </div>
-  ));
+    // Pagination
+    const indexOfLastAnswer = currentPage * answersPerPage;
+    const indexOfFirstAnswer = indexOfLastAnswer - answersPerPage;
+    const currentAnswers = sortedAnswers.slice(indexOfFirstAnswer, indexOfLastAnswer);
+  
+    const paginate = (pageNumber) => {
+      setCurrentPage(pageNumber);
+    };
 
   return (
     <>
@@ -65,8 +66,36 @@ export default function AnswersPage(props) {
             <div>asked {formatTime(question.ask_date_time)}</div>
           </span>
         </div>
-        {mappedAList}
+        <div className="answers-list">
+          {currentAnswers.map(answer => (
+            <div key={answer._id} className="qAnsStyle">
+              <p className="ansTextStyle" dangerouslySetInnerHTML={renderHyperlinks(answer.text)}></p>
+              <span>
+                <span className="aUser">{answer.ans_by}</span>
+                <div> answered {formatTime(answer.ans_date_time)}</div>
+              </span>
+            </div>
+          ))}
+        </div>
         <br />
+        <div className="pagination">
+          <button
+            onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
+            disabled={currentPage === 1}
+          >
+            Prev
+          </button>
+          <button
+            onClick={() => paginate(
+              currentPage < Math.ceil(question.answers.length / answersPerPage) ?
+              currentPage + 1 :
+              Math.ceil(question.answers.length / answersPerPage)
+            )}
+            disabled={currentPage === Math.ceil(question.answers.length / answersPerPage)}
+          >
+            Next
+          </button>
+        </div>        
         <button className="answer-btn" id="newAnswer" onClick={() => props.changeActive("NewAnswer", qid)}>Answer Question</button>
       </div>
     </>
