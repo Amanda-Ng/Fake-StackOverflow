@@ -47,7 +47,7 @@ export default function AnswersPage(props) {
     const indexOfLastAnswer = currentPage * answersPerPage;
     const indexOfFirstAnswer = indexOfLastAnswer - answersPerPage;
     const currentAnswers = sortedAnswers.slice(indexOfFirstAnswer, indexOfLastAnswer);
-  
+    console.log(currentAnswers);
     const paginate = (pageNumber) => {
       setCurrentPage(pageNumber);
     };

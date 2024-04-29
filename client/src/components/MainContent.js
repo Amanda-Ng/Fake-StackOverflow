@@ -5,7 +5,7 @@ import QuestionsPage from './QuestionsPage.js';
 import TagsPage from './TagsPage.js';
 import AnswersPage from './AnswersPage.js';
 import NewAnswerForm from './NewAnswerForm.js';
-import NewQuestionForm from './NewAnswerForm.js';
+import NewQuestionForm from './NewQuestionForm.js';
 
 export default function MainContent(props) {
   const activePage = props.activePage;

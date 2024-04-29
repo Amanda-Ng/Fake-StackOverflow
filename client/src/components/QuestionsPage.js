@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import QuestionsPageHeader from './QuestionsPageHeader.js';
 import QuestionsPageList from './QuestionsPageList.js';
+import ListButtons from './ListButtons.js';
 
 export default function QuestionsPage(props) {
   const activePage = props.activePage;
@@ -47,11 +48,12 @@ export default function QuestionsPage(props) {
       setQList(search(searchString, rawQList));
     }
   },[activePage, rawQList, searchString]);
-
+  // console.log(qList);
   return (
     <>
       {qLoaded && <QuestionsPageHeader rawQList={rawQList} activePage={activePage} qList={qList} setQList={setQList} changeActive={changeActive} />}
       {qLoaded && <QuestionsPageList qList={qList} changeActive={changeActive} />}
+      {qLoaded && <ListButtons list={qList} setList={setQList} /> }
     </>
   );
 }
