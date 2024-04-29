@@ -12,6 +12,7 @@ const bodyParser = require('body-parser')
 const Question = require('./models/questions.js')
 const Tag = require('./models/tags.js')
 const Answer = require('./models/answers.js')
+const Comment = require('./models/comments.js')
 
 // connect to MongoDB
 const mongoDB = 'mongodb://127.0.0.1:27017/fake_so'
@@ -208,6 +209,35 @@ router.put('/questions/:id/answer/views', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' })
   }
 })
+
+// Define a route handler to add a new comment to the database
+router.post('/:aid/comments', async (req, res) => {
+  try {
+    // Extract the answer id from the request parameters
+    const { id } = req.params
+    const { content } = req.body;
+
+    // Create a new Comment instance with the provided content
+    const newComment = new Comment({
+      content: content
+    });
+
+    // Save the new comment to the database
+    const savedComment = await newComment.save();
+
+    // Update the amswer document to add the new answer
+    await Answer.findByIdAndUpdate(
+      aid,
+      { $push: { comments: savedComment } }, // Add the new comment object to the comments array
+      { new: true } // Return the updated document after the update operation
+    )
+
+    res.status(201).json(newComment); // Respond with the newly created comment
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // start server
 const server = app.listen(8000, () => {

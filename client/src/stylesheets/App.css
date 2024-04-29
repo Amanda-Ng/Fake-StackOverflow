@@ -285,10 +285,12 @@ body {
 .qAnsUser {
   color: red;
 }
+.ansAndComments{
+  border-bottom: 1px dashed black;
+}
 .qAnsStyle {
   display: flex;
   align-items: center;
-  border-bottom: 1px dashed black;
 }
 .ansTextStyle {
   margin: 15px 40px 15px 15px;
@@ -297,6 +299,18 @@ body {
 }
 .aUser {
   color: green;
+}
+.comments-pagination{
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.comments-container{
+  padding-left: 30px;
+  padding-bottom: 10px;
+}
+.ans-pagination{
+  padding-left: 10px;
+  padding-bottom: 10px;
 }
 .answer-btn {
   width: 10em;
