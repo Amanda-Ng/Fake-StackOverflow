@@ -1,6 +1,5 @@
 import React from 'react';
 import '../stylesheets/App.css';
-//import { useState } from 'react';
 
 export default class ListButtons extends React.Component {
   constructor(props) {
@@ -43,12 +42,8 @@ export default class ListButtons extends React.Component {
           Prev
         </button>
         <button
-          onClick={() => this.partitioning(
-            currentListCount < Math.ceil(list.length / itemsPerList) ?
-            currentListCount + 1 :
-            Math.ceil(list.length / itemsPerList)
-          )}
-          disabled={currentListCount === Math.ceil(list.length / itemsPerList)}
+            onClick={() => this.partitioning(
+              currentListCount === Math.ceil(list.length / itemsPerList) ? 1 : currentListCount + 1)}
         >
           Next
         </button>
