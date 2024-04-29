@@ -95,11 +95,7 @@ export default function AnswersPage(props) {
           </button>
           <button
             onClick={() => paginate(
-              currentPage < Math.ceil(question.answers.length / answersPerPage) ?
-              currentPage + 1 :
-              Math.ceil(question.answers.length / answersPerPage)
-            )}
-            disabled={currentPage === Math.ceil(question.answers.length / answersPerPage)}
+              currentPage === Math.ceil(question.answers.length / answersPerPage) ? 1 : currentPage + 1)}
           >
             Next
           </button>

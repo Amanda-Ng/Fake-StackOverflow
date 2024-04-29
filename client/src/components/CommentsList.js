@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 export default function CommentsList(props) {
@@ -9,7 +9,13 @@ export default function CommentsList(props) {
   const comments = props.comments;
   const aid = props.aid;
 
+  useEffect(() => {
+    // Reset to the first page of comments whenever 'comments' prop changes
+    setCurrentPage(1);
+  }, [comments]);
+
   // Pagination
+  const totalPages = Math.ceil(comments.length / commentsPerPage);
   const endIndex = currentPage * commentsPerPage;
   const startIndex = endIndex - commentsPerPage;
   const currentComments = comments.slice(startIndex, endIndex);
@@ -87,11 +93,7 @@ export default function CommentsList(props) {
           </button>
           <button
             onClick={() => paginate(
-              currentPage < Math.ceil(comments.length / commentsPerPage) ?
-              currentPage + 1 :
-              Math.ceil(comments.length / commentsPerPage)
-            )}
-            disabled={currentPage === Math.ceil(comments.length / commentsPerPage)}
+              currentPage === totalPages ? 1 : currentPage + 1)}
           >
             Next
           </button>
