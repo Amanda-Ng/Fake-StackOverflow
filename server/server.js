@@ -239,6 +239,39 @@ router.post('/:aid/comments', async (req, res) => {
   }
 });
 
+// router.get('/users', async (req, res) => {
+//   try {
+//     const collection = connection.db.collection('users');
+//     const emailData = await collection.find({email}).toArray();
+//     res.json(emailData);
+//   } catch (err) {
+//     console.error('Error fetching user emails:', err)
+//   }
+// })
+/**
+ * router.get('/questions/:id', async (req, res) => {
+  try {
+    // Extract the question id from the request parameters
+    const { id } = req.params
+
+    // Find the question in the database by id
+    const question = await Question.findById(id)
+
+    // If the question is found, send it as a response
+    if (question) {
+      res.json(question)
+    } else {
+      // If the question is not found, return a 404 error
+      res.status(404).json({ error: 'Question not found' })
+    }
+  } catch (error) {
+    // Handle errors
+    console.error('Error fetching question:', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+ */
+
 // start server
 const server = app.listen(8000, () => {
   console.log('Server is running on port 8000')

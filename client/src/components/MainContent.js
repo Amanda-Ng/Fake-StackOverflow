@@ -6,6 +6,8 @@ import TagsPage from './TagsPage.js';
 import AnswersPage from './AnswersPage.js';
 import NewAnswerForm from './NewAnswerForm.js';
 import NewQuestionForm from './NewQuestionForm.js';
+import WelcomePage from './WelcomePage.js';
+import RegistrationPage from './RegistrationPage.js';
 
 export default function MainContent(props) {
   const activePage = props.activePage;
@@ -15,6 +17,8 @@ export default function MainContent(props) {
   const handleSearch = props.handleSearch;
   let pageContent;
   switch(activePage) {
+    case "Welcome": pageContent = <WelcomePage changeActive={changeActive} />; break;
+    case "Register": pageContent = <RegistrationPage changeActive={changeActive} />; break;
     case "NewQuestion": pageContent = <NewQuestionForm changeActive={changeActive} />; break;
     case "NewAnswer": pageContent = <NewAnswerForm changeActive={changeActive} qid={selectedQuestionId} />; break;
     case "Answers": pageContent = <AnswersPage changeActive={changeActive} qid={selectedQuestionId} />; break;
