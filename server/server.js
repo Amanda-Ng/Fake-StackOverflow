@@ -214,7 +214,7 @@ router.put('/questions/:id/answer/views', async (req, res) => {
 router.post('/:aid/comments', async (req, res) => {
   try {
     // Extract the answer id from the request parameters
-    const { id } = req.params
+    const { aid } = req.params
     const { content } = req.body;
 
     // Create a new Comment instance with the provided content
