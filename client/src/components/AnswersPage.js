@@ -1,6 +1,7 @@
 import '../stylesheets/App.css';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import CommentsList from './CommentsList.js';
 
 export default function AnswersPage(props) {
     const [question, setQuestion] = useState({
@@ -68,17 +69,24 @@ export default function AnswersPage(props) {
         </div>
         <div className="answers-list">
           {currentAnswers.map(answer => (
+            <div className="ansAndComments">
             <div key={answer._id} className="qAnsStyle">
               <p className="ansTextStyle" dangerouslySetInnerHTML={renderHyperlinks(answer.text)}></p>
-              <span>
-                <span className="aUser">{answer.ans_by}</span>
+              <div>
+                <div className="aUser">{answer.ans_by}</div>
                 <div> answered {formatTime(answer.ans_date_time)}</div>
-              </span>
+              </div>
+            </div>
+            {answer.comments && (
+                <div className="comments-container" style={{ display: 'block' }}>
+                  <CommentsList comments={answer.comments} aid={answer._id}/>
+                </div>
+            )}
             </div>
           ))}
         </div>
         <br />
-        <div className="pagination">
+        <div className="ans-pagination">
           <button
             onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
             disabled={currentPage === 1}
@@ -87,11 +95,7 @@ export default function AnswersPage(props) {
           </button>
           <button
             onClick={() => paginate(
-              currentPage < Math.ceil(question.answers.length / answersPerPage) ?
-              currentPage + 1 :
-              Math.ceil(question.answers.length / answersPerPage)
-            )}
-            disabled={currentPage === Math.ceil(question.answers.length / answersPerPage)}
+              currentPage === Math.ceil(question.answers.length / answersPerPage) ? 1 : currentPage + 1)}
           >
             Next
           </button>
