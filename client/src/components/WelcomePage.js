@@ -5,7 +5,7 @@ export default function WelcomePage(props) {
   return (
     <div id="welcome">
       <button onClick={() => {changeActive("Register")}}>Register</button>
-      <button>Login</button>
+      <button onClick={() => {changeActive("Login")}}>Login</button>
       <button>Guest</button>
     </div>
   );

@@ -242,25 +242,14 @@ router.post('/:aid/comments', async (req, res) => {
   }
 });
 
-// route handler for GET requests to get all users' emails from database
-// router.get('/userEmails', async (req, res) => {
-//   try {
-//     const collection = connection.db.collection('users');
-//     // only select the email field
-//     const emailData  = await collection.find({}, {projection: {email: 1, _id: 0} }).toArray();
-//     res.json(emailData);
-//   } catch (err) {
-//     console.error('Error fetching user emails:', err);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// });
+// route handler for POST requests to verify emails for registration
 router.post('/verify-email', async (req, res) => {
   try {
     // extract data from request body
-    const { email } = req.body
+    const { email } = req.body;
 
     // check if the user exists in the database using email field
-    const existingUser = await User.findOne({ email })
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(200).json({ message: 'Email is already registered' }); 
@@ -289,6 +278,28 @@ router.post('/users', async (req, res) => {
     res.status(201).json();
   } catch (error) {
       console.error('Error adding new user:', error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/login', async (req, res) => {
+  try {
+    // extract data from request body
+    const { email, password } = req.body;
+
+    // check if the user exists in the database using email field
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(401).json({ message: "Email is not registered" });
+    }
+    // check if the password entered matches the password for the user with the entered email
+    const passwordCorrect = await bcrypt.compare(password, existingUser.passwordHash);
+    if (!passwordCorrect) {
+      return res.status(401).json({ message: "Wrong password" });
+    }
+    return res.status(200).json({ message: 'Successful login' });
+  } catch (error) {
+      console.error('Error verifying email:', error);
       res.status(500).json({ error: 'Internal server error' });
   }
 });
