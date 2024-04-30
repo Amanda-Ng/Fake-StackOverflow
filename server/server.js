@@ -242,19 +242,37 @@ router.post('/:aid/comments', async (req, res) => {
   }
 });
 
-// route handler to get all users' emails from database
-router.get('/userEmails', async (req, res) => {
+// route handler for GET requests to get all users' emails from database
+// router.get('/userEmails', async (req, res) => {
+//   try {
+//     const collection = connection.db.collection('users');
+//     // only select the email field
+//     const emailData  = await collection.find({}, {projection: {email: 1, _id: 0} }).toArray();
+//     res.json(emailData);
+//   } catch (err) {
+//     console.error('Error fetching user emails:', err);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
+router.post('/verify-email', async (req, res) => {
   try {
-    const collection = connection.db.collection('users');
-    // only select the email field
-    const emailData  = await collection.find({}, {projection: {email: 1, _id: 0} }).toArray();
-    res.json(emailData);
-  } catch (err) {
-    console.error('Error fetching user emails:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    // extract data from request body
+    const { email } = req.body
+
+    // check if the user exists in the database using email field
+    const existingUser = await User.findOne({ email })
+
+    if (existingUser) {
+      return res.status(200).json({ message: 'Email is already registered' }); 
+    }
+    return res.status(200).json({ message: 'Email is not registered' });
+  } catch (error) {
+      console.error('Error verifying email:', error);
+      res.status(500).json({ error: 'Internal server error' });
   }
 });
-// route handler to add new users to database
+
+// route handler for POST requests to add new users to database
 router.post('/users', async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -270,7 +288,7 @@ router.post('/users', async (req, res) => {
     await user.save();
     res.status(201).json();
   } catch (error) {
-      console.error('Error adding user:', error);
+      console.error('Error adding new user:', error);
       res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -69,20 +69,28 @@ async function validateRegisterForm(username, email, password, rePassword) {
     return false;
   }
   // check if there already exists a user with the email being registered
-  const validateUniqueEmail = async (formEmail) => {
+  const validateRegisteredEmail = async (formEmail) => {
     try {
-      const response = await axios.get("http://localhost:8000/userEmails");
-      return !response.data.some(user => user.email === formEmail);
+      const response = await axios.post("http://localhost:8000/verify-email", {
+        email: formEmail
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if(response.data.message === "Email is already registered") {
+        return true;
+      }
     }
     catch(error) {
-      console.error('Error getting user emails:', error);
+      console.error('Error verifying email:', error);
     }
     return false;
   }
-  // the return statements in validateUniqueEmail will not stop execution of validateRegisterForm
-  const isEmailUnique = await validateUniqueEmail(email);
-  if(!isEmailUnique) { 
-    alert("Email already in use");
+  // the return statements in validateRegisteredEmail will not stop execution of validateRegisterForm
+  const isEmailRegistered = await validateRegisteredEmail(email);
+  if(isEmailRegistered) { 
+    alert("Email is already registered");
     return false; 
   }
 
