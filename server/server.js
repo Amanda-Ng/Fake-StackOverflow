@@ -239,6 +239,73 @@ router.post('/:aid/comments', async (req, res) => {
   }
 });
 
+// Route handler to increment comment votes
+router.put('/comments/:commentId/votes', async (req, res) => {
+  const { commentId } = req.params;
+
+  try {
+    // Find the comment in your database by its ID and increment the votes
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    // Increment the votes for the comment
+    comment.votes += 1;
+
+    // Save the updated comment back to the database
+    await comment.save();
+
+    // Find the parent answer containing this comment
+    const answer = await Answer.findOne({ 'comments._id': commentId });
+
+    if (!answer) {
+      return res.status(404).json({ error: 'Associated answer not found' });
+    }
+
+    // Update the votes for the corresponding comment in the answer's 'comments' array
+    const updatedComments = answer.comments.map((c) =>
+      c._id.equals(comment._id) ? { ...c.toObject(), votes: comment.votes } : c
+    );
+
+    // Update the answer's 'comments' array with the modified comment
+    answer.comments = updatedComments;
+
+    // Save the updated answer back to the database
+    await answer.save();
+
+    // Respond with the updated comment (optional)
+    res.json(comment);
+  } catch (error) {
+    console.error('Error updating votes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Define a route handler to fetch comments for a specific answer
+router.get('/answers/:aid/comments', async (req, res) => {
+  const { aid } = req.params; // Extract the answer ID from request params
+
+  try {
+    // Find the answer by ID and populate the 'comments' field
+    const answer = await Answer.findById(aid).populate('comments');
+
+    if (!answer) {
+      return res.status(404).json({ error: 'Answer not found' });
+    }
+
+    // Extract comments from the populated 'comments' field
+    const comments = answer.comments;
+
+    // Respond with the fetched comments
+    res.status(200).json(comments);
+  } catch (error) {
+    console.error('Error fetching comments for answer:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // start server
 const server = app.listen(8000, () => {
   console.log('Server is running on port 8000')

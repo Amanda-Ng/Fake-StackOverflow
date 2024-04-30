@@ -69,8 +69,8 @@ export default function AnswersPage(props) {
         </div>
         <div className="answers-list">
           {currentAnswers.map(answer => (
-            <div className="ansAndComments">
-            <div key={answer._id} className="qAnsStyle">
+            <div key={answer._id} className="ansAndComments">
+            <div className="qAnsStyle">
               <p className="ansTextStyle" dangerouslySetInnerHTML={renderHyperlinks(answer.text)}></p>
               <div>
                 <div className="aUser">{answer.ans_by}</div>
@@ -79,7 +79,7 @@ export default function AnswersPage(props) {
             </div>
             {answer.comments && (
                 <div className="comments-container" style={{ display: 'block' }}>
-                  <CommentsList comments={answer.comments} aid={answer._id}/>
+                  <CommentsList comments={answer.comments} qid={qid} aid={answer._id} changeActive={props.changeActive}/>
                 </div>
             )}
             </div>
