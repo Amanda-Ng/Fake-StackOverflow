@@ -7,12 +7,15 @@ const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
 const cors = require('cors')
+const bcrypt = require('bcrypt')
 const app = express()
 const bodyParser = require('body-parser')
+
 const Question = require('./models/questions.js')
 const Tag = require('./models/tags.js')
 const Answer = require('./models/answers.js')
 const Comment = require('./models/comments.js')
+const User = require('./models/users.js')
 
 // connect to MongoDB
 const mongoDB = 'mongodb://127.0.0.1:27017/fake_so'
@@ -239,38 +242,38 @@ router.post('/:aid/comments', async (req, res) => {
   }
 });
 
-// router.get('/users', async (req, res) => {
-//   try {
-//     const collection = connection.db.collection('users');
-//     const emailData = await collection.find({email}).toArray();
-//     res.json(emailData);
-//   } catch (err) {
-//     console.error('Error fetching user emails:', err)
-//   }
-// })
-/**
- * router.get('/questions/:id', async (req, res) => {
+// route handler to get all users' emails from database
+router.get('/userEmails', async (req, res) => {
   try {
-    // Extract the question id from the request parameters
-    const { id } = req.params
-
-    // Find the question in the database by id
-    const question = await Question.findById(id)
-
-    // If the question is found, send it as a response
-    if (question) {
-      res.json(question)
-    } else {
-      // If the question is not found, return a 404 error
-      res.status(404).json({ error: 'Question not found' })
-    }
-  } catch (error) {
-    // Handle errors
-    console.error('Error fetching question:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    const collection = connection.db.collection('users');
+    // only select the email field
+    const emailData  = await collection.find({}, {projection: {email: 1, _id: 0} }).toArray();
+    res.json(emailData);
+  } catch (err) {
+    console.error('Error fetching user emails:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
-})
- */
+});
+// route handler to add new users to database
+router.post('/users', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    const saltRounds = 10;
+    const salt = await bcrypt.genSalt(saltRounds);
+    const passwordHash = await bcrypt.hash(password, salt);
+    // create a new User instance with the provided content
+    const user = new User({
+      username, email, passwordHash
+    });
+
+    // save the new User to the database
+    await user.save();
+    res.status(201).json();
+  } catch (error) {
+      console.error('Error adding user:', error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // start server
 const server = app.listen(8000, () => {
