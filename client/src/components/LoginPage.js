@@ -18,7 +18,7 @@ export default function LoginPage(props) {
     const { loginEmail, loginPassword } = formData;
     try {
       // send credentials to be validated on server side
-      const response = await axios.post("http://localhost:8000/login", {
+      const response = await axios.post("http://localhost:8000/loginUser", {
         email: loginEmail,
         password: loginPassword
       }, {
@@ -27,12 +27,12 @@ export default function LoginPage(props) {
         }
       });
       const msg = response.data.message;
-      // TODO: alert for unsuccessful logins does not show
-      // either replace alerts with a pop-up or change status code in server.js
+      // TODO: alert should be replaced by actual UI notification
       alert(msg);
       if(msg !== "Successful login") {
         return false;
       }
+      props.changeActive("Welcome");
     }
     catch(error) {
       console.error('Error verifying credentials:', error);
@@ -42,11 +42,11 @@ export default function LoginPage(props) {
   return (
     <div id="registration">
       {/* method="POST" */}
-      <form onSubmit={handleSubmit} id="registration-form" >
+      <form onSubmit={handleSubmit} id="login-form" >
         <label htmlFor="email" >Email</label>
-        <input type="text" id="email" name="loginEmail" value={formData.newEmail} onChange={handleChange} required ></input>
+        <input type="text" id="email" name="loginEmail" value={formData.loginEmail} onChange={handleChange} required ></input>
         <label htmlFor="pw" >Password</label>
-        <input type="text" id="pw" name="loginPassword" value={formData.newPassword} onChange={handleChange} required ></input>
+        <input type="text" id="pw" name="loginPassword" value={formData.loginPassword} onChange={handleChange} required ></input>
         <input type="submit" value="Login" />
       </form>
   </div> 

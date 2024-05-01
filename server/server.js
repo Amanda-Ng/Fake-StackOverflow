@@ -15,7 +15,8 @@ const Question = require('./models/questions.js')
 const Tag = require('./models/tags.js')
 const Answer = require('./models/answers.js')
 const Comment = require('./models/comments.js')
-const User = require('./models/users.js')
+
+const UserController = require('./UserController.js');
 
 // connect to MongoDB
 const mongoDB = 'mongodb://127.0.0.1:27017/fake_so'
@@ -242,67 +243,31 @@ router.post('/:aid/comments', async (req, res) => {
   }
 });
 
-// route handler for POST requests to verify emails for registration
-router.post('/verify-email', async (req, res) => {
-  try {
-    // extract data from request body
-    const { email } = req.body;
+// UserController router handlers
+router.post('/register', UserController.registerUser);
+router.post('/loginUser', UserController.loginUser);
 
-    // check if the user exists in the database using email field
-    const existingUser = await User.findOne({ email });
+// router.post('/login', async (req, res) => {
+//   try {
+//     // extract data from request body
+//     const { email, password } = req.body;
 
-    if (existingUser) {
-      return res.status(200).json({ message: 'Email is already registered' }); 
-    }
-    return res.status(200).json({ message: 'Email is not registered' });
-  } catch (error) {
-      console.error('Error verifying email:', error);
-      res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// route handler for POST requests to add new users to database
-router.post('/users', async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    const saltRounds = 10;
-    const salt = await bcrypt.genSalt(saltRounds);
-    const passwordHash = await bcrypt.hash(password, salt);
-    // create a new User instance with the provided content
-    const user = new User({
-      username, email, passwordHash
-    });
-
-    // save the new User to the database
-    await user.save();
-    res.status(201).json();
-  } catch (error) {
-      console.error('Error adding new user:', error);
-      res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-router.post('/login', async (req, res) => {
-  try {
-    // extract data from request body
-    const { email, password } = req.body;
-
-    // check if the user exists in the database using email field
-    const existingUser = await User.findOne({ email });
-    if (!existingUser) {
-      return res.status(401).json({ message: "Email is not registered" });
-    }
-    // check if the password entered matches the password for the user with the entered email
-    const passwordCorrect = await bcrypt.compare(password, existingUser.passwordHash);
-    if (!passwordCorrect) {
-      return res.status(401).json({ message: "Wrong password" });
-    }
-    return res.status(200).json({ message: 'Successful login' });
-  } catch (error) {
-      console.error('Error verifying email:', error);
-      res.status(500).json({ error: 'Internal server error' });
-  }
-});
+//     // check if the user exists in the database using email field
+//     const existingUser = await User.findOne({ email });
+//     if (!existingUser) {
+//       return res.status(401).json({ message: "Email is not registered" });
+//     }
+//     // check if the password entered matches the password for the user with the entered email
+//     const passwordCorrect = await bcrypt.compare(password, existingUser.passwordHash);
+//     if (!passwordCorrect) {
+//       return res.status(401).json({ message: "Wrong password" });
+//     }
+//     return res.status(200).json({ message: 'Successful login' });
+//   } catch (error) {
+//       console.error('Error verifying email:', error);
+//       res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
 
 // start server
 const server = app.listen(8000, () => {

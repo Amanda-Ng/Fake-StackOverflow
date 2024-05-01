@@ -20,25 +20,29 @@ export default function RegistrationPage(props) {
     // prevent refresh if submission is invalid
     e.preventDefault();
     const { newUsername, newEmail, newPassword, rePassword } = formData;
-    // prevent refresh if invalid inputs using await
-    if(await validateRegisterForm(newUsername, newEmail, newPassword, rePassword)) {
-      try {
-        // send POST request to server
-        await axios.post('http://localhost:8000/users', {
-          username: newUsername,
-          email: newEmail,
-          password: newPassword
-        }, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+    try {
+      // send POST request to server
+      const response = await axios.post('http://localhost:8000/register', {
+        username: newUsername,
+        email: newEmail,
+        password: newPassword,
+        rePassword: rePassword,
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log(response.data.message);
+      if(response.data.message === "Successful registration") {
+        // TODO: alert should be replaced by actual UI notification
+        alert("Successful registration");
         props.changeActive("Welcome");
-      } catch (error) {
-          console.error('Error adding new user:', error);
       }
+    } catch (error) {
+        console.error('Error adding new user:', error);
     }
   };
+  // TODO: change password fields type to password (visible for testing)
   return (
     <div id="registration">
       <form onSubmit={handleSubmit} id="registration-form" method="POST" >
@@ -54,53 +58,4 @@ export default function RegistrationPage(props) {
       </form>
   </div> 
   );
-}
-
-async function validateRegisterForm(username, email, password, rePassword) {
-  // check if email is valid
-  const emailPattern = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
-  if(!emailPattern.test(email)) {
-    alert("Invalid email address");
-    return false;
-  }
-  // check if password and re-entered password match
-  if(password !== rePassword) {
-    alert("Passwords do not match");
-    return false;
-  }
-  // check if there already exists a user with the email being registered
-  const validateRegisteredEmail = async (formEmail) => {
-    try {
-      const response = await axios.post("http://localhost:8000/verify-email", {
-        email: formEmail
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      if(response.data.message === "Email is already registered") {
-        return true;
-      }
-    }
-    catch(error) {
-      console.error('Error verifying email:', error);
-    }
-    return false;
-  }
-  // the return statements in validateRegisteredEmail will not stop execution of validateRegisterForm
-  const isEmailRegistered = await validateRegisteredEmail(email);
-  if(isEmailRegistered) { 
-    alert("Email is already registered");
-    return false; 
-  }
-
-  // check if the password contains the username or email identifier
-  const emailIdentifier = email.slice(0,email.indexOf('@')).toLowerCase();
-  password = password.toLowerCase();
-  username = username.toLowerCase();
-  if(password.indexOf(username) >= 0 || password.indexOf(emailIdentifier) >= 0) {
-    alert("Password cannot contain username or email address identifier");
-    return false;
-  }
-  return true;
 }
