@@ -1,0 +1,66 @@
+.header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
+  position: fixed;
+  z-index: 10;
+  width: 100%;
+  padding: 10px;
+  background-color: white;
+  border-bottom: 1px solid black;
+  box-shadow: 0 5px 5px 0 rgba(0,0,0,.07 );
+  
+}
+.header-title {
+  margin: 0 0 0 10px;
+  font-size: 22px;
+  font-weight: normal;
+  width: 9.5em;
+  padding: 0;
+  margin: 0; 
+  background-color: transparent;
+  border: none; 
+}
+.header-title:hover {
+  color: rgb(48,144,226);
+  transition: color 150ms ease-in-out;
+}
+#search {
+  justify-self: center;
+  padding: 0 15px;
+  font-size: 16px;
+  width: 100%;
+  height: 1.5em;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+.nav-buttons {
+  justify-self: center;
+}
+.white-button {
+  padding: 5px 10px;
+  background-color: white;
+  color: rgb(48,144,226);
+  font-weight: bold;
+  border: 1.5px solid rgb(48,144,226);
+  border-radius: 4px;
+}
+.white-button:hover {
+  background-color: rgb(227, 227, 227);
+  transition: background-color, 0.15s, ease-in-out;
+}
+.blue-button {
+  padding: 5px 10px;
+  background-color: rgb(48,144,226);
+  color: white;
+  font-weight: bold;
+  border: 1.5px solid rgb(48,144,226);
+  border-radius: 4px;
+}
+.blue-button:hover {
+  background-color: rgb(38, 113, 178);
+  transition: background-color, 0.15s, ease-in-out;
+}
+.header-title, .white-button, .blue-button {
+  cursor: pointer;
+}
