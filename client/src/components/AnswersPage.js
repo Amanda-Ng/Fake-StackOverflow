@@ -17,9 +17,20 @@ export default function AnswersPage(props) {
       });
   const [answers, setAnswers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const answersPerPage = 5;
 
   const qid = props.qid;
+
+  // Function to check if user is logged in
+  const checkLoggedInStatus = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/getLoggedIn");
+      setIsLoggedIn(response.data.loggedIn);
+    } catch (error) {
+      console.error('Error getting logged in status:', error);
+    }
+  };
 
   useEffect(() => {
     // Function to update views count in the database
@@ -42,6 +53,11 @@ export default function AnswersPage(props) {
         console.error('Error fetching question and answers:', error);
       });
   }, [qid]);
+
+    // Effect hook to check login status on component mount
+    useEffect(() => {
+      checkLoggedInStatus();
+    }, []); // runs once on component mount
 
       // Sort answers by descending date
       const sortedAnswers = answers.sort((a, b) => new Date(b.ans_date_time) - new Date(a.ans_date_time));
@@ -118,13 +134,13 @@ export default function AnswersPage(props) {
         <div className="qAnsInfo">
           <h3 className="qAnsCount">{answers.length} answers</h3>
           <h3>{question.title}</h3>
-          <button className="ask-btn" id="newQuestion" onClick={() => props.changeActive("NewQuestion")}>Ask Question</button>
+          <button className="ask-btn" id="newQuestion" onClick={() => props.changeActive("NewQuestion")} disabled={!isLoggedIn}>Ask Question</button>
           <div>
             <h3 className="qAnsViews">{question.views} views</h3>
             <div className="q-vote-buttons">
-              <button className="q-upvote-btn" onClick={() => handleQUpvote(qid)}>Upvote</button>
+              <button className="q-upvote-btn" onClick={() => handleQUpvote(qid)} disabled={!isLoggedIn}>Upvote</button>
               <p className="qVotes">{question.votes}</p>
-              <button className="q-downvote-btn" onClick={() => handleQDownvote(qid)}>Downvote</button>
+              <button className="q-downvote-btn" onClick={() => handleQDownvote(qid)} disabled={!isLoggedIn}>Downvote</button>
             </div>
           </div>
 
@@ -151,9 +167,9 @@ export default function AnswersPage(props) {
             <div key={answer._id} className="ansAndComments">
             <div className="qAnsStyle">
             <div className="a-vote-buttons">
-              <button className="a-upvote-btn" onClick={() => handleAUpvote(answer._id)}>Upvote</button>
+              <button className="a-upvote-btn" onClick={() => handleAUpvote(answer._id)} disabled={!isLoggedIn}>Upvote</button>
               <p className="aVotes">{answer.votes}</p>
-              <button className="a-downvote-btn" onClick={() => handleADownvote(answer._id)}>Downvote</button>
+              <button className="a-downvote-btn" onClick={() => handleADownvote(answer._id)} disabled={!isLoggedIn}>Downvote</button>
             </div>
               <p className="ansTextStyle" dangerouslySetInnerHTML={renderHyperlinks(answer.text)}></p>
               <div>
@@ -184,7 +200,7 @@ export default function AnswersPage(props) {
             Next
           </button>
         </div>        
-        <button className="answer-btn" id="newAnswer" onClick={() => props.changeActive("NewAnswer", qid)}>Answer Question</button>
+        <button className="answer-btn" id="newAnswer" onClick={() => props.changeActive("NewAnswer", qid)} disabled={!isLoggedIn}>Answer Question</button>
       </div>
     </>
   );
@@ -206,6 +222,7 @@ function formatTime(date) {
     return `${month} ${day}, ${year} at ${hour}:${minute}`;
   }
 
+// TODO: add reputation constraint
 function renderHyperlinks(text) {
   const hyperlinkPattern = /\[([^\s]+)\]\((https?:\/\/[^\s]+)\)/g;
   return { __html: text.replace(hyperlinkPattern, '<a href="$2" target="_blank" style="color: rgb(48,144,226)">$1</a>') };

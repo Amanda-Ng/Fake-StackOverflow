@@ -1,12 +1,29 @@
 import '../stylesheets/App.css';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function QuestionsPageHeader(props) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const activePage = props.activePage;
   const changeActive = props.changeActive;
   const rawQList = props.rawQList;
   const qList = props.qList;
   const setQList = props.setQList;
   sortNewest(rawQList); // by default, sort by newest
+
+  const checkLoggedInStatus = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/getLoggedIn");
+      setIsLoggedIn(response.data.loggedIn);
+    } catch (error) {
+      console.error('Error getting logged in status:', error);
+    }
+  };
+
+    // Effect hook to check login status on component mount
+    useEffect(() => {
+      checkLoggedInStatus();
+    }, []); // runs once on component mount
 
   let shownListLen = qList.length;
   let title = ""; // changes if search is used
@@ -39,7 +56,7 @@ export default function QuestionsPageHeader(props) {
   return (
     <div className="page-header">
       {title}
-      <button id="ask-btn" className="ask-btn" onClick={() => changeActive("NewQuestion")}>
+      <button id="ask-btn" className="ask-btn" onClick={() => changeActive("NewQuestion")} disabled={!isLoggedIn}>
         Ask Question
       </button>
       <h3 id="question-count">{shownListLen} questions</h3>
