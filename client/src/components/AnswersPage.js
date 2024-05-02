@@ -1,6 +1,8 @@
 import '../stylesheets/App.css';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import ACommentsList from './ACommentsList.js';
+import QCommentsList from './QCommentsList.js';
 
 export default function AnswersPage(props) {
     const [question, setQuestion] = useState({
@@ -11,6 +13,7 @@ export default function AnswersPage(props) {
         asked_by: 'Anonymous',
         ask_date_time: Date.now,
         views: 0,
+        votes: 0
       });
   const [answers, setAnswers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,15 +44,72 @@ export default function AnswersPage(props) {
   }, [qid]);
 
       // Sort answers by descending date
-      const sortedAnswers = question.answers.sort((a, b) => new Date(b.ans_date_time) - new Date(a.ans_date_time));
+      const sortedAnswers = answers.sort((a, b) => new Date(b.ans_date_time) - new Date(a.ans_date_time));
 
     // Pagination
     const indexOfLastAnswer = currentPage * answersPerPage;
     const indexOfFirstAnswer = indexOfLastAnswer - answersPerPage;
     const currentAnswers = sortedAnswers.slice(indexOfFirstAnswer, indexOfLastAnswer);
-  
+    console.log(currentAnswers);
     const paginate = (pageNumber) => {
       setCurrentPage(pageNumber);
+    };
+
+    // TODO: add reputation constraint and update reputation
+    const handleQUpvote = async (qId) => {
+      try {
+        await axios.put(`http://localhost:8000/questions/${qId}/upvote`);
+  
+      const response = await axios.get(`http://localhost:8000/questions/${qid}`);
+      setQuestion(response.data); // Update state with fetched question
+  
+      props.changeActive('Answers', qid);
+  
+      } catch (error) {
+        console.error('Error updating votes:', error);
+      }
+    };
+
+    const handleQDownvote = async (qId) => {
+      try {
+        await axios.put(`http://localhost:8000/questions/${qId}/downvote`);
+  
+        const response = await axios.get(`http://localhost:8000/questions/${qid}`);
+        setQuestion(response.data); // Update state with fetched question
+  
+      props.changeActive('Answers', qid);
+  
+      } catch (error) {
+        console.error('Error updating votes:', error);
+      }
+    };
+
+    const handleAUpvote = async (aId) => {
+      try {
+        await axios.put(`http://localhost:8000/answers/${aId}/upvote`);
+  
+        const response = await axios.get(`http://localhost:8000/questions/${qid}/answers`);
+        setAnswers(response.data); // Update state with fetched answers
+  
+      props.changeActive('Answers', qid);
+  
+      } catch (error) {
+        console.error('Error updating votes:', error);
+      }
+    };
+
+    const handleADownvote = async (aId) => {
+      try {
+        await axios.put(`http://localhost:8000/answers/${aId}/downvote`);
+  
+        const response = await axios.get(`http://localhost:8000/questions/${qid}/answers`);
+        setAnswers(response.data); // Update state with fetched answers
+  
+      props.changeActive('Answers', qid);
+  
+      } catch (error) {
+        console.error('Error updating votes:', error);
+      }
     };
 
   return (
@@ -59,26 +119,58 @@ export default function AnswersPage(props) {
           <h3 className="qAnsCount">{answers.length} answers</h3>
           <h3>{question.title}</h3>
           <button className="ask-btn" id="newQuestion" onClick={() => props.changeActive("NewQuestion")}>Ask Question</button>
-          <h3 className="qAnsViews">{question.views} views</h3>
-          <p dangerouslySetInnerHTML={renderHyperlinks(question.text)}></p>
+          <div>
+            <h3 className="qAnsViews">{question.views} views</h3>
+            <div className="q-vote-buttons">
+              <button className="q-upvote-btn" onClick={() => handleQUpvote(qid)}>Upvote</button>
+              <p className="qVotes">{question.votes}</p>
+              <button className="q-downvote-btn" onClick={() => handleQDownvote(qid)}>Downvote</button>
+            </div>
+          </div>
+
+          <div>
+            <p dangerouslySetInnerHTML={renderHyperlinks(question.text)}></p>
+            <div className="ans-page-tags">{question.tags.map(tag => (
+                <span key={tag._id} className="question-tags">{tag.name}</span>
+              ))}</div>
+          </div>
           <span className="qAnsMeta">
             <span className="qAnsUser">{question.asked_by}</span>
             <div>asked {formatTime(question.ask_date_time)}</div>
           </span>
+          
+          {question.comments && (
+                <div className="q-comments-container" style={{ display: 'block' }}>
+                  <QCommentsList comments={question.comments} qid={question._id} changeActive={props.changeActive}/>
+                </div>
+            )}
+
         </div>
         <div className="answers-list">
           {currentAnswers.map(answer => (
-            <div key={answer._id} className="qAnsStyle">
+            <div key={answer._id} className="ansAndComments">
+            <div className="qAnsStyle">
+            <div className="a-vote-buttons">
+              <button className="a-upvote-btn" onClick={() => handleAUpvote(answer._id)}>Upvote</button>
+              <p className="aVotes">{answer.votes}</p>
+              <button className="a-downvote-btn" onClick={() => handleADownvote(answer._id)}>Downvote</button>
+            </div>
               <p className="ansTextStyle" dangerouslySetInnerHTML={renderHyperlinks(answer.text)}></p>
-              <span>
-                <span className="aUser">{answer.ans_by}</span>
+              <div>
+                <div className="aUser">{answer.ans_by}</div>
                 <div> answered {formatTime(answer.ans_date_time)}</div>
-              </span>
+              </div>
+            </div>
+            {answer.comments && (
+                <div className="a-comments-container" style={{ display: 'block' }}>
+                  <ACommentsList comments={answer.comments} qid={qid} aid={answer._id} changeActive={props.changeActive}/>
+                </div>
+            )}
             </div>
           ))}
         </div>
         <br />
-        <div className="pagination">
+        <div className="ans-pagination">
           <button
             onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
             disabled={currentPage === 1}
@@ -87,11 +179,7 @@ export default function AnswersPage(props) {
           </button>
           <button
             onClick={() => paginate(
-              currentPage < Math.ceil(question.answers.length / answersPerPage) ?
-              currentPage + 1 :
-              Math.ceil(question.answers.length / answersPerPage)
-            )}
-            disabled={currentPage === Math.ceil(question.answers.length / answersPerPage)}
+              currentPage === Math.ceil(question.answers.length / answersPerPage) ? 1 : currentPage + 1)}
           >
             Next
           </button>

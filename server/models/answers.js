@@ -1,5 +1,6 @@
 // Answer Document Schema
 const mongoose = require('mongoose')
+const Comment = require('./comments.js')
 
 const Schema = mongoose.Schema
 
@@ -15,6 +16,13 @@ const answerSchema = new Schema({
   ans_date_time: {
     type: Date,
     default: Date.now
+  },
+  comments: {
+    type: [Comment.schema]
+  }, 
+  votes: {
+    type: Number,
+    default: 0
   }
 })
 

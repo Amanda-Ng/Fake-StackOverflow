@@ -7,7 +7,7 @@ import MainContent from './components/MainContent.js';
 
 function App() {
   // for navigating between pages
-  const [activePage, setActivePage] = useState("Questions");
+  const [activePage, setActivePage] = useState("Welcome");
   //selectedQuestionId is used for showing answers to a question
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const changeActive = (name, qid = null) => {
