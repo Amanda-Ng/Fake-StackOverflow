@@ -2,6 +2,7 @@
 const mongoose = require('mongoose')
 const Tag = require('./tags.js')
 const Answer = require('./answers.js')
+const Comment = require('./comments.js')
 
 const Schema = mongoose.Schema
 
@@ -33,6 +34,13 @@ const questionSchema = new Schema({
   views: {
     type: Number,
     default: 0
+  }, 
+  votes: {
+    type: Number,
+    default: 0
+  },
+  comments: {
+    type: [Comment.schema]
   }
 })
 

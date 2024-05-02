@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function CommentsList(props) {
+export default function ACommentsList(props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState(props.comments);
@@ -43,7 +43,7 @@ export default function CommentsList(props) {
 
     try {
       // Send POST request to add new comment
-      await axios.post(`http://localhost:8000/${aid}/comments`, { content: newComment }, {
+      await axios.post(`http://localhost:8000/answer/${aid}/comments`, { content: newComment }, {
         headers: {
             'Content-Type': 'application/json'
         }
@@ -68,7 +68,7 @@ export default function CommentsList(props) {
 
   const handleUpvote = async (commentId) => {
     try {
-      await axios.put(`http://localhost:8000/comments/${commentId}/votes`);
+      await axios.put(`http://localhost:8000/answers/comments/${commentId}/votes`);
 
     // // Update the local comments state to reflect the updated votes
     // const updatedComments = comments.map((comment) => {
