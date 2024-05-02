@@ -3,11 +3,13 @@ Add design docs in *images/*
 
 ## Instructions to setup and run project
 - In client and server directories run: ```npm install```
+- In client directory run: ```npm install axios```
 - In server directory run: ```npm install express```
 - In server directory run: ```npm install mongoose```
 - In server directory run: ```npm install nodemon```
 - In server directory run: ```npm install cors```
-- In client directory run: ```npm install axios```
+- In server directory run: ```npm install express-session```
+- In server directory run: ```npm install connect-mongo```
 
 
 ## Team Member 1 Contribution
