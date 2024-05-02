@@ -592,4 +592,3 @@ process.on('SIGINT', () => {
 })
 
 module.exports = router;
-module.exports.connection = connection;
