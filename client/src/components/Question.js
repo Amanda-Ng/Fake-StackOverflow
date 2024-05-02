@@ -3,6 +3,7 @@ import '../stylesheets/App.css';
 export default function Question(props) {
   const q = props.qData;
   const title = q.title;
+  const summary = q.summary;
   const author = q.asked_by;
   const numAnswers = q.answers.length;
   const views = q.views;
@@ -21,6 +22,7 @@ export default function Question(props) {
       </span>
       <span className="question-title-container">
           <button className="question-title" key={id} onClick={() => props.changeActive("Answers", id)}>{title}</button>
+          <p className="question-summary">{summary}</p>
           {tList}
         </span>
         <span className="question-metadata-container">

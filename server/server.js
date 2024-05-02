@@ -85,7 +85,7 @@ router.get('/questions/:id', async (req, res) => {
 router.post('/questions', async (req, res) => {
   try {
     // Extract data from request body
-    const { title, text, tags, username } = req.body
+    const { title, text, summary, tags, username } = req.body
 
     const questionTags = []
 
@@ -109,6 +109,7 @@ router.post('/questions', async (req, res) => {
     const newQuestion = new Question({
       title,
       text,
+      summary,
       tags: questionTags,
       asked_by: username,
       ask_date_time: new Date()

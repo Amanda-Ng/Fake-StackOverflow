@@ -6,6 +6,7 @@ export default function NewQuestionForm(props) {
     const [formData, setFormData] = useState({
         questionTitle: '',
         questionText: '',
+        questionSummary: '',
         questionTags: '',
         questionUsername: ''
     });
@@ -17,13 +18,14 @@ export default function NewQuestionForm(props) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const { questionTitle, questionText, questionTags, questionUsername } = formData;
+        const { questionTitle, questionText, questionSummary, questionTags, questionUsername } = formData;
 
-        if (validateQuestionForm(questionTitle, questionText, questionTags, questionUsername)) {
+        if (validateQuestionForm(questionTitle, questionText, questionSummary, questionTags, questionUsername)) {
             try {
                 await axios.post('http://localhost:8000/questions', {
                     title: questionTitle,
                     text: questionText,
+                    summary: questionSummary,
                     tags: removeDuplicates(questionTags.toLowerCase().trim().split(/\s+/)),
                     username: questionUsername
                 }, {
@@ -34,6 +36,7 @@ export default function NewQuestionForm(props) {
                 setFormData({
                     questionTitle: '',
                     questionText: '',
+                    questionSummary: '',
                     questionTags: '',
                     questionUsername: ''
                 });
@@ -54,6 +57,9 @@ export default function NewQuestionForm(props) {
                 <label htmlFor="qText" className="form-header" required>Question Text*</label><br />
                 <i className="form-instructions">Add details</i><br />
                 <textarea id="qText" name="questionText" value={formData.questionText} onChange={handleChange} required></textarea><br /><br />
+                <label htmlFor="qSummary" className="form-header" required>Question Summary*</label><br />
+                <i className="form-instructions">Add a summary</i><br />
+                <textarea id="qSummary" name="questionSummary" value={formData.questionSummary} onChange={handleChange} required></textarea><br /><br />
                 <label htmlFor="qTags" className="form-header">Tags*</label><br />
                 <i className="form-instructions">Add keywords separated by whitespace</i><br />
                 <input type="text" id="qTags" name="questionTags" value={formData.questionTags} onChange={handleChange} /><br /><br />
@@ -76,22 +82,29 @@ function removeDuplicates(arr) {
     return unique;
 }
 
-function validateQuestionForm(title, text, tags, username) {
+function validateQuestionForm(title, text, summary, tags, username) {
     // regex matches (non-alphanumeric non-whitespace non-hyphen) || (more than 5 whitespace delimited terms) || (more than 20 characters per term)
     const tagsPattern = /[^\w\s-]|((?:\S+\s+){5,}\S+$)|\S{21,}/;
     // joins unique tags in tags and trim leading/trailing whitespace
     const uniqueTags = removeDuplicates(tags.trim().toLowerCase().split(/\s+/)).join(' ');
 
-    if (title.length > 100) {
-        alert("Question title should be 100 characters or less.");
+    if (title.length > 50) {
+        alert("Question title should be 50 characters or less.");
         return false;
     }
+
+    if (summary.length > 140) {
+        alert("Question summary should be 140 characters or less.");
+        return false;
+    }
+
+    // TODO: add reputation constraint
     // true if any of the regex groups match and executes if block
     if (tagsPattern.test(uniqueTags)) {
         alert("Tags should be whitespace-separated, consisting of alphanumerics or hyphenated words. There should be 5 or less tags, and each 20 characters or less.");
         return false;
     }
-    if (title.trim() === '' || text.trim() === '' || tags.trim() === '' || username.trim() === '') {
+    if (title.trim() === '' || text.trim() === '' || summary.trim() === '' || tags.trim() === '' || username.trim() === '') {
         alert("Please fill in all required fields.");
         return false;
     }

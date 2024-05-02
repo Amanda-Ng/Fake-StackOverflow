@@ -16,6 +16,10 @@ const questionSchema = new Schema({
     type: String,
     required: true
   },
+  summary: {
+    type: String,
+    required: true
+  },
   tags: {
     type: [Tag.schema],
     required: true
