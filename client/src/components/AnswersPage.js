@@ -128,12 +128,17 @@ export default function AnswersPage(props) {
             </div>
           </div>
 
-          <p dangerouslySetInnerHTML={renderHyperlinks(question.text)}></p>
+          <div>
+            <p dangerouslySetInnerHTML={renderHyperlinks(question.text)}></p>
+            <div className="ans-page-tags">{question.tags.map(tag => (
+                <span key={tag._id} className="question-tags">{tag.name}</span>
+              ))}</div>
+          </div>
           <span className="qAnsMeta">
             <span className="qAnsUser">{question.asked_by}</span>
             <div>asked {formatTime(question.ask_date_time)}</div>
           </span>
-
+          
           {question.comments && (
                 <div className="q-comments-container" style={{ display: 'block' }}>
                   <QCommentsList comments={question.comments} qid={question._id} changeActive={props.changeActive}/>
