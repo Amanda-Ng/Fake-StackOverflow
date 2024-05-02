@@ -5,9 +5,24 @@ export default function QCommentsList(props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState(props.comments);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const commentsPerPage = 3;
 
   const qid = props.qid;
+
+  const checkLoggedInStatus = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/getLoggedIn");
+      setIsLoggedIn(response.data.loggedIn);
+    } catch (error) {
+      console.error('Error getting logged in status:', error);
+    }
+  };
+
+    // Effect hook to check login status on component mount
+    useEffect(() => {
+      checkLoggedInStatus();
+    }, []); // runs once on component mount
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -87,7 +102,7 @@ export default function QCommentsList(props) {
       <div className="comments-list">
         {comments.slice(startIndex, endIndex).map((comment) => (
           <div key={comment._id} className="q-comment-item">
-            <button className="qcomment-upvote-btn" onClick={() => handleUpvote(comment._id)}>Upvote</button>
+            <button className="qcomment-upvote-btn" onClick={() => handleUpvote(comment._id)} disabled={!isLoggedIn}>Upvote</button>
             <p>{comment.votes}     {comment.content} commented {formatTime(comment.createdAt)}</p>
             {/* <span>{comment.content}   </span> */}
             {/* <span> */}
@@ -122,8 +137,9 @@ export default function QCommentsList(props) {
           placeholder="Add a new comment..."
           value={newComment}
           onChange={onCommentChange}
+          disabled={!isLoggedIn}
         />
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={!isLoggedIn}>Submit</button>
       </form>
     </div>
   );
