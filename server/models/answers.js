@@ -19,6 +19,10 @@ const answerSchema = new Schema({
   },
   comments: {
     type: [Comment.schema]
+  }, 
+  votes: {
+    type: Number,
+    default: 0
   }
 })
 

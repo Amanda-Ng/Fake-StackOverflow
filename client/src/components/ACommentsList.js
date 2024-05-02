@@ -1,76 +1,98 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function CommentsList(props) {
+export default function ACommentsList(props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [newComment, setNewComment] = useState('');
+  const [comments, setComments] = useState(props.comments);
   const commentsPerPage = 3;
 
-  const comments = props.comments;
+  const qid = props.qid;
   const aid = props.aid;
 
   useEffect(() => {
-    // Reset to the first page of comments whenever 'comments' prop changes
-    setCurrentPage(1);
-  }, [comments]);
+    const fetchComments = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8000/answers/${aid}/comments`);
+        setComments(response.data);
+      } catch (error) {
+        console.error('Error fetching comments:', error);
+      }
+    };
+
+    fetchComments(); // Fetch comments when component mounts or when aid prop changes
+
+    return () => {
+    };
+  }, [aid]); // Trigger effect when aid prop or comments changes
 
   // Pagination
   const totalPages = Math.ceil(comments.length / commentsPerPage);
   const endIndex = currentPage * commentsPerPage;
   const startIndex = endIndex - commentsPerPage;
-  const currentComments = comments.slice(startIndex, endIndex);
+  // const currentComments = comments.slice(startIndex, endIndex);
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
   const handleCommentSubmit = async (event) => {
-    // event.preventDefault();
-    // try {
-    //   // Send POST request to add new comment
-    //   await axios.post(`http://localhost:8000/${aid}/comments`, { content: newComment }, {
-    //     headers: {
-    //         'Content-Type': 'application/json'
-    //     }
-    //   });
+    event.preventDefault();
+
+    if (validateCommentForm(newComment)) {
+
+    try {
+      // Send POST request to add new comment
+      await axios.post(`http://localhost:8000/answer/${aid}/comments`, { content: newComment }, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      });
       
-    //   // Clear input after submission
-    //   setNewComment('');
-      
-    //   // refresh comments here
-    // } catch (error) {
-    //   console.error('Error adding comment:', error);
-    // }
-  };
+      // Clear input after submission
+      setNewComment('');
+
+      // refresh comments
+      const response = await axios.get(`http://localhost:8000/answers/${aid}/comments`);
+      setComments(response.data); // Update state with fetched comments
+
+      props.changeActive('Answers', qid);
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
+  }};
 
   const onCommentChange = (event) => {
     setNewComment(event.target.value);
   };
 
   const handleUpvote = async (commentId) => {
-    // try {
-    //   const response = await axios.put(`http://localhost:8000/comments/${commentId}/votes`);
-    //   console.log('Vote updated successfully:', response.data);
+    try {
+      await axios.put(`http://localhost:8000/answers/comments/${commentId}/votes`);
 
-    //   // Update the local comments state to reflect the updated votes
-    //   const updatedComments = comments.map((comment) => {
-    //     if (comment._id === commentId) {
-    //       return { ...comment, votes: comment.votes + 1 };
-    //     }
-    //     return comment;
-    //   });
-    //   setComments(updatedComments);
-    // } catch (error) {
-    //   console.error('Error updating votes:', error);
-    //   // Handle error (e.g., display an error message)
-    // }
+    // // Update the local comments state to reflect the updated votes
+    // const updatedComments = comments.map((comment) => {
+    //   if (comment._id === commentId) {
+    //     return { ...comment, votes: comment.votes + 1 };
+    //   }
+    //   return comment;
+    // });
+    // setComments(updatedComments);
+    const response = await axios.get(`http://localhost:8000/answers/${aid}/comments`);
+    setComments(response.data); // Update state with fetched comments
+
+    props.changeActive('Answers', qid);
+
+    } catch (error) {
+      console.error('Error updating votes:', error);
+    }
   };
   
   return (
     <div className="comments-container">
       {/* Display current comments */}
       <div className="comments-list">
-        {currentComments.map((comment) => (
+        {comments.slice(startIndex, endIndex).map((comment) => (
           <div key={comment._id} className="comment-item">
             <button className="upvote-btn" onClick={() => handleUpvote(comment._id)}>Upvote</button>
             <span>{comment.votes}     </span>
@@ -128,4 +150,13 @@ function formatTime(date) {
   if (diff < 31536000) { return `${month} ${day} at ${hour}:${minute}`; } // less than a year
   const year = date.getFullYear();
   return `${month} ${day}, ${year} at ${hour}:${minute}`;
+}
+
+// TODO: add reputation constraint
+function validateCommentForm(content) {
+  if (content.length > 140) {
+    alert("Comment content should be 140 characters or less.");
+    return false;
+}
+  return true;
 }

@@ -107,7 +107,7 @@ router.get('/questions/:id', async (req, res) => {
 router.post('/questions', async (req, res) => {
   try {
     // Extract data from request body
-    const { title, text, tags, username } = req.body
+    const { title, text, summary, tags, username } = req.body
 
     const questionTags = []
 
@@ -131,6 +131,7 @@ router.post('/questions', async (req, res) => {
     const newQuestion = new Question({
       title,
       text,
+      summary,
       tags: questionTags,
       asked_by: username,
       ask_date_time: new Date()
@@ -233,7 +234,7 @@ router.put('/questions/:id/answer/views', async (req, res) => {
 })
 
 // Define a route handler to add a new comment to the database
-router.post('/:aid/comments', async (req, res) => {
+router.post('/answer/:aid/comments', async (req, res) => {
   try {
     // Extract the answer id from the request parameters
     const { aid } = req.params
@@ -257,6 +258,314 @@ router.post('/:aid/comments', async (req, res) => {
     res.status(201).json(newComment); // Respond with the newly created comment
   } catch (error) {
     console.error('Error adding comment:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Define a route handler to add a new comment to the database
+router.post('/question/:qid/comments', async (req, res) => {
+  try {
+    // Extract the question id from the request parameters
+    const { qid } = req.params
+    const { content } = req.body;
+
+    // Create a new Comment instance with the provided content
+    const newComment = new Comment({
+      content: content
+    });
+
+    // Save the new comment to the database
+    const savedComment = await newComment.save();
+
+    // Update the question document to add the new question
+    await Question.findByIdAndUpdate(
+      qid,
+      { $push: { comments: savedComment } },
+      { new: true }
+    );
+
+    res.status(201).json(newComment); // Respond with the newly created comment
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Route handler to increment answer comment votes
+router.put('/answers/comments/:commentId/votes', async (req, res) => {
+  const { commentId } = req.params;
+
+  try {
+    // Find the comment in your database by its ID and increment the votes
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    // Increment the votes for the comment
+    comment.votes += 1;
+
+    // Save the updated comment back to the database
+    await comment.save();
+
+    // Find the parent answer containing this comment
+    const answer = await Answer.findOne({ 'comments._id': commentId });
+
+    if (!answer) {
+      return res.status(404).json({ error: 'Associated answer not found' });
+    }
+
+    // Update the votes for the corresponding comment in the answer's 'comments' array
+    const updatedComments = answer.comments.map((c) =>
+      c._id.equals(comment._id) ? { ...c.toObject(), votes: comment.votes } : c
+    );
+
+    // Update the answer's 'comments' array with the modified comment
+    answer.comments = updatedComments;
+
+    // Save the updated answer back to the database
+    await answer.save();
+
+    // Respond with the updated comment (optional)
+    res.json(comment);
+  } catch (error) {
+    console.error('Error updating votes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Define a route handler to fetch comments for a specific answer
+router.get('/answers/:aid/comments', async (req, res) => {
+  const { aid } = req.params; // Extract the answer ID from request params
+
+  try {
+    // Find the answer by ID and populate the 'comments' field
+    const answer = await Answer.findById(aid).populate('comments');
+
+    if (!answer) {
+      return res.status(404).json({ error: 'Answer not found' });
+    }
+
+    // Extract comments from the populated 'comments' field
+    const comments = answer.comments;
+
+    // Respond with the fetched comments
+    res.status(200).json(comments);
+  } catch (error) {
+    console.error('Error fetching comments for answer:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Define a route handler to fetch comments for a specific question
+router.get('/questions/:qid/comments', async (req, res) => {
+  const { qid } = req.params; // Extract the question ID from request params
+
+  try {
+    // Find the question by ID and populate the 'comments' field
+    const question = await Question.findById(qid).populate('comments');
+
+    if (!question) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
+    // Extract comments from the populated 'comments' field
+    const comments = question.comments;
+
+    // Respond with the fetched comments
+    res.status(200).json(comments);
+  } catch (error) {
+    console.error('Error fetching comments for question:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Route handler to fetch answers for a specific question by ID
+router.get('/questions/:qid/answers', async (req, res) => {
+  try {
+    const { qid } = req.params;
+
+    // Find the question by ID and populate the 'answers' field
+    const question = await Question.findById(qid).populate('answers');
+
+    if (!question) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
+    // Extract answers from the populated 'answers' field
+    const answers = question.answers;
+
+    // Respond with the fetched answers
+    res.status(200).json(answers);
+  } catch (error) {
+    console.error('Error fetching answers for question:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Route handler to increment question comment votes
+router.put('/questions/comments/:commentId/votes', async (req, res) => {
+  const { commentId } = req.params;
+
+  try {
+    // Find the comment in your database by its ID and increment the votes
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    // Increment the votes for the comment
+    comment.votes += 1;
+
+    // Save the updated comment back to the database
+    await comment.save();
+
+    // Find the parent question containing this comment
+    const question = await Question.findOne({ 'comments._id': commentId });
+
+    if (!question) {
+      return res.status(404).json({ error: 'Associated question not found' });
+    }
+
+    // Update the votes for the corresponding comment in the question's 'comments' array
+    const updatedComments = question.comments.map((c) =>
+      c._id.equals(comment._id) ? { ...c.toObject(), votes: comment.votes } : c
+    );
+
+    // Update the question's 'comments' array with the modified comment
+    question.comments = updatedComments;
+
+    // Save the updated question back to the database
+    await question.save();
+
+    // Respond with the updated comment (optional)
+    res.json(comment);
+  } catch (error) {
+    console.error('Error updating votes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Route handler to increment question votes
+router.put('/questions/:qId/upvote', async (req, res) => {
+  const { qId } = req.params;
+
+  try {
+    const question = await Question.findByIdAndUpdate(
+      qId,
+      { $inc: { votes: 1 } }, // Increment votes by 1
+      { new: true } // Return updated question after update
+    );
+
+    if (!question) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
+    res.json(question);
+  } catch (error) {
+    console.error('Error updating question upvotes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Route handler to decrement question votes
+router.put('/questions/:qId/downvote', async (req, res) => {
+  const { qId } = req.params;
+
+  try {
+    const question = await Question.findByIdAndUpdate(
+      qId,
+      { $inc: { votes: -1 } }, // Decrement votes by 1
+      { new: true } // Return updated question after update
+    );
+
+    if (!question) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
+    res.json(question);
+  } catch (error) {
+    console.error('Error updating question downvotes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Route handler to increment answer votes
+router.put('/answers/:aId/upvote', async (req, res) => {
+  const { aId } = req.params;
+
+  try {
+    const answer = await Answer.findByIdAndUpdate(
+      aId,
+      { $inc: { votes: 1 } }, // Increment votes by 1
+      { new: true } // Return updated answer after update
+    );
+
+    if (!answer) {
+      return res.status(404).json({ error: 'Answer not found' });
+    }
+
+    // After updating the answer, find the parent question containing this answer
+    const question = await Question.findOne({ 'answers._id': aId });
+
+    if (!question) {
+      return res.status(404).json({ error: 'Parent question not found for this answer' });
+    }
+
+    // Update the parent question's answers array to reflect the updated answer
+    const updatedAnswers = question.answers.map((ans) =>
+      ans._id.equals(answer._id) ? { ...ans.toObject(), votes: answer.votes } : ans
+    );
+
+    question.answers = updatedAnswers;
+
+    // Save the updated question back to the database
+    await question.save();
+
+    res.json(answer);
+  } catch (error) {
+    console.error('Error updating answer upvotes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Route handler to decrement answer votes
+router.put('/answers/:aId/downvote', async (req, res) => {
+  const { aId } = req.params;
+
+  try {
+    const answer = await Answer.findByIdAndUpdate(
+      aId,
+      { $inc: { votes: -1 } }, // Decrement votes by 1
+      { new: true } // Return updated answer after update
+    );
+
+    if (!answer) {
+      return res.status(404).json({ error: 'Answer not found' });
+    }
+
+    // After updating the answer, find the parent question containing this answer
+    const question = await Question.findOne({ 'answers._id': aId });
+
+    if (!question) {
+      return res.status(404).json({ error: 'Parent question not found for this answer' });
+    }
+
+    // Update the parent question's answers array to reflect the updated answer
+    const updatedAnswers = question.answers.map((ans) =>
+      ans._id.equals(answer._id) ? { ...ans.toObject(), votes: answer.votes } : ans
+    );
+
+    question.answers = updatedAnswers;
+
+    // Save the updated question back to the database
+    await question.save();
+
+    res.json(answer);
+  } catch (error) {
+    console.error('Error updating answer downvotes:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

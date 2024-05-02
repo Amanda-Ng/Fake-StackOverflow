@@ -38,7 +38,7 @@ body {
     height: 38px; 
     width: 350px;
   }
-  #qText{
+  #qText, #qSummary{
     font-family: Arial, Helvetica, sans-serif;
     font-size: 18px;
     height:200px; 
@@ -277,6 +277,19 @@ body {
 .qAnsCount, .qAnsViews {
   margin-left: 40px;
 }
+.q-vote-buttons, .a-vote-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.q-upvote-btn, .q-downvote-btn {
+  width: 90px;
+  margin-bottom: 10px;
+}
+.ans-page-tags{
+  display:block;
+  width: 800px;
+}
 .qAnsMeta {
   margin-right: 40px;
   margin-bottom: 1.5em;
@@ -292,6 +305,12 @@ body {
   display: flex;
   align-items: center;
 }
+.a-upvote-btn, .a-downvote-btn{
+  width: 90px;
+  margin-bottom: 10px;
+  margin-left: 24px;
+  margin-top: 10px;
+}
 .ansTextStyle {
   margin: 15px 40px 15px 15px;
   padding: 20px;
@@ -304,9 +323,17 @@ body {
   padding-top: 10px;
   padding-bottom: 10px;
 }
-.comments-container{
-  padding-left: 30px;
+.a-comments-container{
+  padding-left: 150px;
   padding-bottom: 10px;
+}
+.q-comments-container{
+  padding-left: 200px;
+  padding-bottom: 10px;
+  width: 800px;
+}
+.q-comment-item{
+  display: flex;
 }
 .ans-pagination{
   padding-left: 10px;
