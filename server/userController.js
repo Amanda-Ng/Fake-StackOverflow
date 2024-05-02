@@ -1,12 +1,13 @@
 const bcrypt = require('bcrypt');
 const User = require('./models/users.js');
+const { connection } = require('./mongooseConnection.js');
 
-const UserController = {};
+const userController = {};
 
 // TODO: change status codes from 200 to 401
 // 200 for testing and to allow alerts to pop-up
 
-UserController.registerUser = async (req, res) => {
+userController.registerUser = async (req, res) => {
   const { username, email, password, rePassword } = req.body;
 
   // check if email is valid
@@ -48,38 +49,60 @@ UserController.registerUser = async (req, res) => {
   });
 
   // save the new user to the database
-  await user.save();
+  await user.save(); 
   return res.status(201).json({ message: 'Successful registration' }); 
+  // TODO: remove message and replace with the below
+  // return res.status(201).json({ success: true });
 };
 
-UserController.loginUser = async (req, res) => {
+userController.loginUser = async (req, res) => {
   try {
     // extract data from request body
     const { email, password } = req.body;
 
     // check if the user exists in the database using email field
-    const existingUser = await User.findOne({ email });
-    if (!existingUser) {
+    const userData = await User.findOne({ email });
+    if (!userData) {
       return res.status(200).json({ message: "Email is not registered" });
     }
     // check if the password entered matches the password for the user
-    const passwordCorrect = await bcrypt.compare(password, existingUser.passwordHash);
+    const passwordCorrect = await bcrypt.compare(password, userData.passwordHash);
     if (!passwordCorrect) {
       return res.status(200).json({ message: "Wrong password" });
     }
-    return res.status(200).json({ message: 'Successful login' });
+    req.session.userId = userData._id;
+    req.session.save();
+    return res.status(200).json({ success: true });
   } catch (error) {
       console.error('Failed to log in:', error);
       res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// UserController.logoutUser = async (req, res) => {
-  
-// };
+// TODO: logoutUser requires further testing
+userController.logoutUser = async (req, res) => {
+  const collection = connection.db.collection('sessions');
+  // delete all sessions (there should only be 1)
+  const result = await collection.deleteMany({});
+  // Date(0) returns a date from 1970 so the cookie is expired
+  res.cookie('token', '', { expires: new Date(0) });
+  return res.json({ success: true });
+};
 
-// UserController.getLoggedIn = async (req, res) => {
-  
-// };
+userController.getLoggedIn = async (req, res) => {
+  const collection = connection.db.collection('sessions');
+  const sessionData = await collection.find({}).toArray();
+  // sessions collection will be empty when there's no user logged in
+  if (sessionData[0] !== undefined) {
+    // there should only be 1 document in sessions at a time
+    const parsed = JSON.parse(sessionData[0].session);
+    const userId = parsed.userId;
+    return res.status(200).json({ loggedIn: true, userId: userId });
+  } 
+  else {
+      // user is a guest
+      return res.status(200).json({ loggedIn: false });
+  }
+};
 
-module.exports = UserController;
+module.exports = userController;

@@ -3,26 +3,26 @@
 // Run this script to launch the server.
 // The server should run on localhost port 8000.
 // This is where you should start writing server-side code for this application.
+
+// TODO: add semicolons
+// TODO: change app to router in some instances
 const express = require('express')
-const router = express.Router()
-const mongoose = require('mongoose')
+
+const { connection } = require('./mongooseConnection.js');
 const cors = require('cors')
-const bcrypt = require('bcrypt')
-const app = express()
 const bodyParser = require('body-parser')
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+
+const router = express.Router()
+const app = express()
 
 const Question = require('./models/questions.js')
 const Tag = require('./models/tags.js')
 const Answer = require('./models/answers.js')
 const Comment = require('./models/comments.js')
 
-const UserController = require('./UserController.js');
-
-// connect to MongoDB
-const mongoDB = 'mongodb://127.0.0.1:27017/fake_so'
-mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true })
-const connection = mongoose.connection
-connection.on('error', console.error.bind(console, 'MongoDB connection error'))
+const userController = require('./userController.js');
 
 // resolves HTTP request from port 3000 being blocked by CORS policy
 app.use(cors())
@@ -32,6 +32,24 @@ app.use(bodyParser.json())
 
 // Parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }))
+
+// express session setup must be done before router setup
+// cookie config's maxAge is 1 hour and httpOnly is true by default
+// TODO: review if sameSite config is appropriate
+const hour = 6*60*10000;
+app.use(session({
+  // TODO: fix secret config
+  // process.env.SESSION_SECRET
+  secret: "what a secret!",
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: true, 
+    sameSite: "none",
+    maxAge: hour
+  },
+  store: MongoStore.create({ mongoUrl: "mongodb://127.0.0.1/fake_so" }),
+}));
 
 // Use the router for all requests
 app.use(router)
@@ -243,31 +261,11 @@ router.post('/:aid/comments', async (req, res) => {
   }
 });
 
-// UserController router handlers
-router.post('/register', UserController.registerUser);
-router.post('/loginUser', UserController.loginUser);
-
-// router.post('/login', async (req, res) => {
-//   try {
-//     // extract data from request body
-//     const { email, password } = req.body;
-
-//     // check if the user exists in the database using email field
-//     const existingUser = await User.findOne({ email });
-//     if (!existingUser) {
-//       return res.status(401).json({ message: "Email is not registered" });
-//     }
-//     // check if the password entered matches the password for the user with the entered email
-//     const passwordCorrect = await bcrypt.compare(password, existingUser.passwordHash);
-//     if (!passwordCorrect) {
-//       return res.status(401).json({ message: "Wrong password" });
-//     }
-//     return res.status(200).json({ message: 'Successful login' });
-//   } catch (error) {
-//       console.error('Error verifying email:', error);
-//       res.status(500).json({ error: 'Internal server error' });
-//   }
-// });
+// userController router handlers
+router.post('/register', userController.registerUser);
+router.post('/loginUser', userController.loginUser);
+router.get('/getLoggedIn', userController.getLoggedIn);
+router.get('/logout', userController.logoutUser);
 
 // start server
 const server = app.listen(8000, () => {
@@ -284,4 +282,5 @@ process.on('SIGINT', () => {
   })
 })
 
-module.exports = router
+module.exports = router;
+module.exports.connection = connection;
