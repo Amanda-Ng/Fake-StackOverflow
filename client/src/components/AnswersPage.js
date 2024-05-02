@@ -55,6 +55,7 @@ export default function AnswersPage(props) {
       setCurrentPage(pageNumber);
     };
 
+    // TODO: add reputation constraint and update reputation
     const handleQUpvote = async (qId) => {
       try {
         await axios.put(`http://localhost:8000/questions/${qId}/upvote`);
