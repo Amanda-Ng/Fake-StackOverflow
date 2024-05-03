@@ -22,7 +22,7 @@ export default function MainContent(props) {
     case "Welcome": pageContent = <WelcomePage changeActive={changeActive} />; break;
     case "Register": pageContent = <RegistrationPage changeActive={changeActive} />; break;
     case "Login": pageContent = <LoginPage changeActive={changeActive} />; break;
-    case "UserProfile": pageContent = <UserProfile />; break;
+    case "UserProfile": pageContent = <UserProfile changeActive={changeActive} />; break;
     case "NewQuestion": pageContent = <NewQuestionForm changeActive={changeActive} />; break;
     case "NewAnswer": pageContent = <NewAnswerForm changeActive={changeActive} qid={selectedQuestionId} />; break;
     case "Answers": pageContent = <AnswersPage changeActive={changeActive} qid={selectedQuestionId} />; break;
