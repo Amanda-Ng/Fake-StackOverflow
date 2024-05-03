@@ -13,7 +13,7 @@ export default function NavBar(props) {
   };
   
   const [ isLoggedIn, setIsLoggedIn ] = useState(false);
-  // check if the user is logged in everytime the activePage changes
+  // check if the user is logged in every time the activePage changes
   useEffect(() => {
     axios.get("http://localhost:8000/getLoggedIn")
       .then(response => {
@@ -44,7 +44,7 @@ export default function NavBar(props) {
       <div className="nav-buttons">
       {isLoggedIn ? (
         <>
-          <button className="white-button" onClick={() => {changeActive("Welcome")}}>Profile</button>
+          <button className="white-button" onClick={() => {changeActive("UserProfile")}}>Profile</button>
           &nbsp;
           <button className="white-button" onClick={() => {handleLogout(); changeActive("Welcome");}}>Logout</button>
         </>

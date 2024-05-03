@@ -104,5 +104,19 @@ userController.getLoggedIn = async (req, res) => {
       return res.status(200).json({ loggedIn: false });
   }
 };
-
+userController.getUserData = async (req, res) => {
+  const { userId }= req.body;
+  const userData = await User.findById(userId);
+  if (!userData) {
+    return res.status(200).json({ message: "Cannot find user profile" });
+  }
+  return res.status(200).json({ 
+    date: userData.createdAt,
+    rep: "rep points to be implemented",
+    qAsked: "array of questions asked",
+    qAnswered: "array of questions answered",
+    answers: "array of answers",
+    tags: "",
+  });
+}
 module.exports = userController;

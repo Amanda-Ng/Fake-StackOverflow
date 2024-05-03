@@ -575,6 +575,7 @@ router.post('/register', userController.registerUser);
 router.post('/loginUser', userController.loginUser);
 router.get('/getLoggedIn', userController.getLoggedIn);
 router.get('/logout', userController.logoutUser);
+router.post('/userProfile', userController.getUserData);
 
 // start server
 const server = app.listen(8000, () => {
