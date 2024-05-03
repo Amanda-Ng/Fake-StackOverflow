@@ -1,0 +1,33 @@
+#user-profile {
+  margin: 0 10%;
+}
+.username {
+  font-size: 30px;
+}
+.bio {
+  font-size: 18px;
+}
+#mini-menu {
+  margin-top: 10%;
+}
+#mini-menu ul {
+  padding-left: 0;
+  list-style: none;
+  text-align: center;
+}
+#mini-menu li {
+  margin-top: 15px;
+}
+.mini-menu-link {
+  display: block;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  font-size: 22px;
+  text-decoration: none;
+  border: none; 
+  cursor: pointer;
+}
+.mini-menu-link:hover, .mini-menu-link:active {
+  color: rgb(67, 126, 228);
+}

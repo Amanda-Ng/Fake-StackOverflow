@@ -111,11 +111,13 @@ userController.getUserData = async (req, res) => {
     return res.status(200).json({ message: "Cannot find user profile" });
   }
   return res.status(200).json({ 
+    username: userData.username,
     date: userData.createdAt,
-    rep: "rep points to be implemented",
-    questions: "array of questions asked",
-    answers: "array of answers",
-    tags: "",
+    rep: userData.reputation,
+    user: userData,
+    questions: userData["questions"],
+    answers: userData["answers"],
+    tags: userData["tags"],
   });
 }
 module.exports = userController;
