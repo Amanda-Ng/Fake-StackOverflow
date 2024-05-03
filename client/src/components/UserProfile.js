@@ -63,7 +63,7 @@ export default function UserProfile(props) {
         <span className="bio">🕓&nbsp;Member for {profileData.date}</span>
         &nbsp;&nbsp;&nbsp;&nbsp;
         <span className="bio">🏆&nbsp;{profileData.rep} reputation points</span>
-        <div id="profile-content">
+        {/* <div id="profile-content">
           <div id="mini-menu">
             <ul>
               <li id="mini-q"><button className="mini-link" onClick={() => {handleClick("Q")}}>
@@ -116,7 +116,7 @@ export default function UserProfile(props) {
             </ul>
           </div>
         )}
-        </div>
+        </div> */}
         </>
       )}
     </div>
@@ -132,9 +132,12 @@ async function retrieveProfileData() {
         'Content-Type': 'application/json'
       }
     });
-    const { username, date, rep, questions, answers, tags } = response2.data;
+    // const { username, date, rep, questions, answers, tags } = response2.data;
+    const { username, date, rep, message } = response2.data;
     const formattedDate = formatTime(date);
-    return [username, formattedDate, rep, questions, answers, tags];
+    console.log(message);
+    return [username, formattedDate, rep];
+    // return [username, formattedDate, rep, questions, answers, tags];
   }
   catch(error) {
     console.error('Error getting user profile', error);

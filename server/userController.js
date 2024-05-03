@@ -111,24 +111,25 @@ userController.getUserData = async (req, res) => {
   if (!userData) {
     return res.status(200).json({ message: "Cannot find user profile" });
   }
-  const answeredQuestions = [];
-  for(const answer of userData["answers"]) {
-    try {
-      let answeredQ = await Question.findOne({ 'answers._id': answer._id });
-      answeredQuestions.push(answeredQ);
-    }
-    catch(error) {
-      console.error("Error finding answered questions:", error);
-    }
-  }
+  const questionsList = await Question.find();
+  // const answeredQuestions = [];
+  // for(const answer of userData["answers"]) {
+  //   try {
+  //     let answeredQ = await Question.findOne({ 'answers._id': answer._id });
+  //     answeredQuestions.push(answeredQ);
+  //   }
+  //   catch(error) {
+  //     console.error("Error finding answered questions:", error);
+  //   }
+  // }
   return res.status(200).json({ 
     username: userData.username,
     date: userData.createdAt,
     rep: userData.reputation,
-    user: userData,
-    questions: userData["questions"],
-    answers: answeredQuestions,
-    tags: userData["tags"],
+    message: questionsList
+    // questions: userData["questions"],
+    // answers: answeredQuestions,
+    // tags: userData["tags"],
   });
 }
 module.exports = userController;

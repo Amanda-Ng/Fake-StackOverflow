@@ -1,12 +1,18 @@
 // Answer Document Schema
 const mongoose = require('mongoose')
 const Comment = require('./comments.js')
+const User = require('./users.js');
 
 const Schema = mongoose.Schema
 
 const answerSchema = new Schema({
   text: {
     type: String,
+    required: true
+  },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
     required: true
   },
   ans_by: {
