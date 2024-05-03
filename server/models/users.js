@@ -24,7 +24,7 @@ const UserSchema = new Schema(
       type: Number,
       default: 50
     },
-    questionsAsked: {
+    questions: {
       type: [Question.schema],
       default: []
     },
