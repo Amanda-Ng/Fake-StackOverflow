@@ -66,12 +66,19 @@ function commentCreate(content, votes, createdAt) {
     let comment = new Comment(commentDetail);
     return comment.save();
   }
-async function userCreate(username, email, password) {
+async function userCreate(username, email, password, questions, answers, tags) {
   const saltRounds = 10;
   const salt = await bcrypt.genSalt(saltRounds);
   const passwordHash = await bcrypt.hash(password, salt);
 
-  const userDetail = {username:username, email:email, passwordHash:passwordHash};
+  const userDetail = {
+    username:username, 
+    email:email, 
+    passwordHash:passwordHash,
+    questions: questions,
+    answers: answers, 
+    tags: tags
+  };
   let user = new User(userDetail);
   return user.save();
 }
@@ -91,22 +98,23 @@ const populate = async () => {
   let t4 = await tagCreate('shared-preferences');
   let t5 = await tagCreate('python');
   let t6 = await tagCreate('pandas');
-  let a1 = await answerCreate('React Router is mostly a wrapper around the history library. history handles interaction with the browser\'s window.history for you with its browser and hash histories. It also provides a memory history which is useful for environments that don\'t have a global history. This is particularly useful in mobile app development (react-native) and unit testing with Node.', 'hamkalo', false, false, 1);
-  let a2 = await answerCreate('On my end, I like to have a single history object that I can carry even outside components. I like to have a single history.js file that I import on demand, and just manipulate it. You just have to change BrowserRouter to Router, and specify the history prop. This doesn\'t change anything for you, except that you have your own history object that you can manipulate as you want. You need to install history, the library used by react-router.', 'azad', false, [c1, c2, c3, c4], 2);
-  let a3 = await answerCreate('Consider using apply() instead; commit writes its data to persistent storage immediately, whereas apply will handle it in the background.', 'abaya', false, false, 3);
-  let a4 = await answerCreate('YourPreference yourPrefrence = YourPreference.getInstance(context); yourPreference.saveData(YOUR_KEY,YOUR_VALUE);', 'alia', false, false, 4);
-  let a5 = await answerCreate('I just found all the above examples just too confusing, so I wrote my own. ', 'sana', false, false, 5);
+  let a1 = await answerCreate('React Router is mostly a wrapper around the history library. history handles interaction with the browser\'s window.history for you with its browser and hash histories. It also provides a memory history which is useful for environments that don\'t have a global history. This is particularly useful in mobile app development (react-native) and unit testing with Node.', 'Ricky', false, false, 1);
+  let a2 = await answerCreate('On my end, I like to have a single history object that I can carry even outside components. I like to have a single history.js file that I import on demand, and just manipulate it. You just have to change BrowserRouter to Router, and specify the history prop. This doesn\'t change anything for you, except that you have your own history object that you can manipulate as you want. You need to install history, the library used by react-router.', 'warpingbagel', false, [c1, c2, c3, c4], 2);
+  let a3 = await answerCreate('Consider using apply() instead; commit writes its data to persistent storage immediately, whereas apply will handle it in the background.', 'SpringFlowers', false, false, 3);
+  let a4 = await answerCreate('YourPreference yourPrefrence = YourPreference.getInstance(context); yourPreference.saveData(YOUR_KEY,YOUR_VALUE);', 'warpingbagel', false, false, 4);
+  let a5 = await answerCreate('I just found all the above examples just too confusing, so I wrote my own. ', 'UserFound', false, false, 5);
 
-  await questionCreate('Programmatically navigate using React router', 'the alert shows the proper index for the li clicked, and when I alert the variable within the last function I\'m calling, moveToNextImage(stepClicked), the same value shows but the animation isn\'t happening. This works many other ways, but I\'m trying to pass the index value of the list item clicked to use for the math to calculate.', 'Sample summary 1', [t1, t2], [a1, a2], 'Joji John', false, false, 6, [c5, c6, c7, c8]);
-  await questionCreate('android studio save string shared preference, start activity and load the saved string', 'I am using bottom navigation view but am using custom navigation, so my fragments are not recreated every time i switch to a different view. I just hide/show my fragments depending on the icon selected. The problem i am facing is that whenever a config change happens (dark/light theme), my app crashes. I have 2 fragments in this activity and the below code is what i am using to refrain them from being recreated.', 'Sample summary 2', [t3, t4, t2], [a3, a4, a5], 'saltyPeter', false, 121, 7);
-  await questionCreate('How do I install pandas into Visual Studio Code?', 'I want to read an Excel CSV file, and after researching, I realized I need to import pandas as pd. Is there a way to install it into the Visual Studio Code?', 'Sample summary 3' ,[t5,t6], [], 'programmingnoob', false, false, 7, []);
-  await questionCreate("Import pandas could not be resolved from source Pylance(reportMissingModuleSource)", "Previously to Visual Studio Code I installed \"Anaconda\" to use Jupyter, and now it says that i have the existing packages (pandas and numpy).", 'Sample summary 4' , [t5, t6], [], 'Joan Cheto', false, false, 10, []);
-  await questionCreate("How do I merge two dictionaries in a single expression in Python?", "I want to merge two dictionaries into a new dictionary. I want to merge two dictionaries into a new dictionary.", 'Sample summary 5' , [t5], [], "Carl Meyer", false, false, 15, []);
-  await questionCreate("Loop (for each) over an array in JavaScript", "How can I loop through all the entries in an array using JavaScript?", 'Sample summary 5' , [t2], [], "Dante1986", false, false, 100, []);
+  let q1 = await questionCreate('Programmatically navigate using React router', 'the alert shows the proper index for the li clicked, and when I alert the variable within the last function I\'m calling, moveToNextImage(stepClicked), the same value shows but the animation isn\'t happening. This works many other ways, but I\'m trying to pass the index value of the list item clicked to use for the math to calculate.', 'Sample summary 1', [t1, t2], [a1, a2], 'SpringFlowers', false, false, 6, [c5, c6, c7, c8]);
+  let q2 = await questionCreate('android studio save string shared preference, start activity and load the saved string', 'I am using bottom navigation view but am using custom navigation, so my fragments are not recreated every time i switch to a different view. I just hide/show my fragments depending on the icon selected. The problem i am facing is that whenever a config change happens (dark/light theme), my app crashes. I have 2 fragments in this activity and the below code is what i am using to refrain them from being recreated.', 'Sample summary 2', [t3, t4, t2], [a3, a4, a5], 'Ricky', false, 121, 7);
+  let q3 = await questionCreate('How do I install pandas into Visual Studio Code?', 'I want to read an Excel CSV file, and after researching, I realized I need to import pandas as pd. Is there a way to install it into the Visual Studio Code?', 'Sample summary 3' ,[t5,t6], [], 'warpingbagel', false, false, 7, []);
+  let q4 = await questionCreate("Import pandas could not be resolved from source Pylance(reportMissingModuleSource)", "Previously to Visual Studio Code I installed \"Anaconda\" to use Jupyter, and now it says that i have the existing packages (pandas and numpy).", 'Sample summary 4' , [t5, t6], [], 'Ricky', false, false, 10, []);
+  let q5 = await questionCreate("How do I merge two dictionaries in a single expression in Python?", "I want to merge two dictionaries into a new dictionary. I want to merge two dictionaries into a new dictionary.", 'Sample summary 5' , [t5], [], "warpingbagel", false, false, 15, []);
+  let q6 = await questionCreate("Loop (for each) over an array in JavaScript", "How can I loop through all the entries in an array using JavaScript?", 'Sample summary 6' , [t2], [], "SpringFlowers", false, false, 100, []);
 
-  await userCreate("LemonSeed","lemm.ra@gmail.com","gr@3fsQ!6");
-  await userCreate("SpringFlowers","flower.vi.3@stonybrook.edu","ahiiy#@$sdf92");
-  await userCreate("GoldBagel", "harry.potter.009@yahoo.com", "$sOIUfg41!");
+  await userCreate("Ricky","ricky.ii@gmail.com","gr@3fsQ!6", [q2,q4], [a1], [t3, t4]);
+  await userCreate("SpringFlowers","daisy.pinkler.3@stonybrook.edu","ahiiy#@$sdf92", [q1,q6], [a3], [t1, t2]);
+  await userCreate("warpingbagel", "hit.by.a.bagel@yahoo.com", "password?",[q3, q5], [a2, a4], [t5, t6]);
+  await userCreate("UserFound", "x.goth32153@gmail.com", "theskyisnotblue", [], [a5], []);
 
   if(db) db.close();
   console.log('done');
