@@ -113,8 +113,7 @@ userController.getUserData = async (req, res) => {
   return res.status(200).json({ 
     date: userData.createdAt,
     rep: "rep points to be implemented",
-    qAsked: "array of questions asked",
-    qAnswered: "array of questions answered",
+    questions: "array of questions asked",
     answers: "array of answers",
     tags: "",
   });
