@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const User = require('./models/users.js');
 const { connection } = require('./mongooseConnection.js');
+const Question = require('./models/questions.js');
 
 const userController = {};
 
@@ -110,13 +111,23 @@ userController.getUserData = async (req, res) => {
   if (!userData) {
     return res.status(200).json({ message: "Cannot find user profile" });
   }
+  const answeredQuestions = [];
+  for(const answer of userData["answers"]) {
+    try {
+      let answeredQ = await Question.findOne({ 'answers._id': answer._id });
+      answeredQuestions.push(answeredQ);
+    }
+    catch(error) {
+      console.error("Error finding answered questions:", error);
+    }
+  }
   return res.status(200).json({ 
     username: userData.username,
     date: userData.createdAt,
     rep: userData.reputation,
     user: userData,
     questions: userData["questions"],
-    answers: userData["answers"],
+    answers: answeredQuestions,
     tags: userData["tags"],
   });
 }
