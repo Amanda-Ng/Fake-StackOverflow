@@ -14,10 +14,10 @@ export default function UserProfile(props) {
       setProfileData({
         username: data[0],
         date: data[1],
-        rep: data[2],
+        reputation: data[2],
         questions: data[3],
         answers: data[4],
-        tags: data[5],
+        // tags: data[5]
       });
     })
     .catch(error => {
@@ -62,8 +62,8 @@ export default function UserProfile(props) {
         <h1 className="username">{profileData.username}</h1>
         <span className="bio">🕓&nbsp;Member for {profileData.date}</span>
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <span className="bio">🏆&nbsp;{profileData.rep} reputation points</span>
-        {/* <div id="profile-content">
+        <span className="bio">🏆&nbsp;{profileData.reputation} reputation points</span>
+        <div id="profile-content">
           <div id="mini-menu">
             <ul>
               <li id="mini-q"><button className="mini-link" onClick={() => {handleClick("Q")}}>
@@ -116,7 +116,7 @@ export default function UserProfile(props) {
             </ul>
           </div>
         )}
-        </div> */}
+        </div>
         </>
       )}
     </div>
@@ -132,12 +132,10 @@ async function retrieveProfileData() {
         'Content-Type': 'application/json'
       }
     });
-    // const { username, date, rep, questions, answers, tags } = response2.data;
-    const { username, date, rep, message } = response2.data;
+    const { username, date, reputation, questions, answers } = response2.data;
     const formattedDate = formatTime(date);
-    console.log(message);
-    return [username, formattedDate, rep];
-    // return [username, formattedDate, rep, questions, answers, tags];
+    return [username, formattedDate, reputation, questions, answers];
+    // return [username, formattedDate, reputation, questions, answers, tags];
   }
   catch(error) {
     console.error('Error getting user profile', error);
