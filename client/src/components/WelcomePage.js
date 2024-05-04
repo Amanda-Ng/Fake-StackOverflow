@@ -5,19 +5,29 @@ import Notification from './Notification.js';
 
 export default function WelcomePage(props) {
   const changeActive = props.changeActive;
-  const [showNotif, setShowNotif] = useState(false);
+  const [notif, setNotif] = useState("");
   const closeNotif = () => {
-    setShowNotif(false);
+    setNotif("");
   }
   const [ isLoggedIn, setIsLoggedIn ] = useState(false);
   axios.get("http://localhost:8000/getLoggedIn")
     .then(response => {
       setIsLoggedIn(response.data.loggedIn);
-      setShowNotif(response.data.loggedIn);
+      if(isLoggedIn) {
+        setNotif("You are already logged in");
+      }
     })
     .catch(error => {
       console.error('Error getting logged in', error);
     });
+  
+  const handleGuestClick = () => {
+    setNotif("You are browsing as a Guest. Some features will be disabled.");
+    setTimeout(() => {
+      props.changeActive("Questions");
+    }, 2000);
+  }
+
   return (
     <>
     <div id="welcome">
@@ -28,10 +38,13 @@ export default function WelcomePage(props) {
       <button onClick={() => {changeActive("Login")}} disabled = {isLoggedIn} >
         Login
       </button>
-      <button disabled = {isLoggedIn} >Guest</button>
+      <button onClick={handleGuestClick} disabled = {isLoggedIn} >Guest</button>
     </div>
-    {showNotif && 
-      <Notification message="You are already logged in" onClose={closeNotif}/>
+    {notif === "You are already logged in." && 
+      <Notification message={notif} onClose={closeNotif}/>
+    }
+    {notif === "You are browsing as a Guest. Some features will be disabled." && 
+      <Notification message={notif} onClose={closeNotif}/>
     }
     </>
   );
