@@ -53,9 +53,9 @@ export default function LoginPage(props) {
       <h1>Login</h1>
       <form onSubmit={handleSubmit} id="login-form" method="POST" >
         <label htmlFor="email" ></label>
-        <input type="text" id="email" name="loginEmail" value={formData.loginEmail} onChange={handleChange} placeholder="Email" required ></input>
+        <input type="email" id="email" name="loginEmail" value={formData.loginEmail} onChange={handleChange} placeholder="Email" required ></input>
         <label htmlFor="pw" ></label>
-        <input type="text" id="pw" name="loginPassword" value={formData.loginPassword} onChange={handleChange} placeholder="Password" required ></input>
+        <input type="password" id="pw" name="loginPassword" value={formData.loginPassword} onChange={handleChange} placeholder="Password" required ></input>
         <input type="submit" id="login-button" value="Login" />
       </form>
   </div> 
