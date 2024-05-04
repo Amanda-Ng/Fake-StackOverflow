@@ -105,7 +105,8 @@ userController.getLoggedIn = async (req, res) => {
       return res.status(200).json({ loggedIn: false });
   }
 };
-userController.getUserData = async (req, res) => {
+
+userController.getUserProfileData = async (req, res) => {
   const { userId }= req.body;
   const userData = await User.findById(userId);
   if (!userData) {
@@ -120,11 +121,20 @@ userController.getUserData = async (req, res) => {
       date: userData.createdAt,
       reputation: userData.reputation,
       questions: askedQuestions,
-      answers:  answeredQuestions,
+      answers: answeredQuestions,
     });
   }  
   catch(error) {
     console.error("Error retrieving user profile information:", error);
   }
+}
+
+userController.getUsername = async (req, res) => {
+  const { userId }= req.body;
+  const userData = await User.findById(userId);
+  if (!userData) {
+    return res.status(200).json({ message: "Cannot find user profile" });
+  }
+  return res.status(200).json({ username: userData.username });
 }
 module.exports = userController;
