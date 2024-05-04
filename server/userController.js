@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const User = require('./models/users.js');
 const { connection } = require('./mongooseConnection.js');
+const Question = require('./models/questions.js');
 
 const userController = {};
 
@@ -105,4 +106,35 @@ userController.getLoggedIn = async (req, res) => {
   }
 };
 
+userController.getUserProfileData = async (req, res) => {
+  const { userId }= req.body;
+  const userData = await User.findById(userId);
+  if (!userData) {
+    return res.status(200).json({ message: "Cannot find user profile" });
+  }
+  // get all necessary profile information to return
+  try {
+    const askedQuestions = await Question.find({ 'userId': userId });
+    const answeredQuestions = await Question.find( { 'answers.userId': userId });
+    return res.status(200).json({ 
+      username: userData.username,
+      date: userData.createdAt,
+      reputation: userData.reputation,
+      questions: askedQuestions,
+      answers: answeredQuestions,
+    });
+  }  
+  catch(error) {
+    console.error("Error retrieving user profile information:", error);
+  }
+}
+
+userController.getUsername = async (req, res) => {
+  const { userId }= req.body;
+  const userData = await User.findById(userId);
+  if (!userData) {
+    return res.status(200).json({ message: "Cannot find user profile" });
+  }
+  return res.status(200).json({ username: userData.username });
+}
 module.exports = userController;

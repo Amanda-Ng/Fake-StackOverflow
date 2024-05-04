@@ -110,12 +110,11 @@ export default function ACommentsList(props) {
         {comments.slice(startIndex, endIndex).map((comment) => (
           <div key={comment._id} className="comment-item">
             <button className="upvote-btn" onClick={() => handleUpvote(comment._id)} disabled={!isLoggedIn}>Upvote</button>
-            <span>{comment.votes}     </span>
-            <span>{comment.content}   </span>
-            <span>
-              {/* TODO: add username */}
-                {/* <span className="cUser">{comment.user.username}</span> */}
-                <span> commented {formatTime(comment.createdAt)}</span>
+            <span className="cVotes">{comment.votes}</span>
+            <span>{comment.content}</span>
+            <span className="comment-metadata">
+                <span className="cUser"> - {comment.username}</span>
+                <span className="cTime"> commented {formatTime(comment.createdAt)}</span>
             </span>
           </div>
         ))}

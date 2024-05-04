@@ -1,0 +1,75 @@
+#user-profile {
+  margin: 0 5%;
+}
+.username {
+  font-size: 30px;
+}
+.bio {
+  font-size: 18px;
+}
+#profile-content {
+  display: grid;
+  grid-template-columns: 8em auto;
+  grid-column-gap: 30px;
+  margin-top: 4%;
+}
+#mini-menu {
+  width: 8em;
+}
+#mini-menu ul {
+  padding-left: 0;
+  list-style: none;
+  width: 8em;
+}
+#mini-menu li {
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+.mini-link {
+  display: block;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  font-size: 20px;
+  text-decoration: none;
+  border: none; 
+  cursor: pointer;
+}
+.mini-link:hover {
+  color: rgb(67, 126, 228);
+}
+.mini-list {
+  padding-left: 0;
+  list-style: none;
+}
+.mini-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 18px;
+  border: 1px solid rgb(176, 176, 176);
+  border-radius: 5px;
+}
+.mini-item li {
+  align-self: center;
+}
+.mini-item li:hover {
+  color: rgb(48,144,226);
+  transition: color 150ms ease-in-out;
+  cursor: pointer;
+}
+.delete-button {
+  padding: 5px 10px;
+  height: 30px;
+  background-color: rgb(48,144,226);
+  color: white;
+  border: 1px solid rgb(48,144,226);
+  border-radius: 8px;
+}
+.delete-button:hover {
+  background-color: rgb(38, 113, 178);
+  transition: background-color, 0.15s, ease-in-out;
+  cursor: pointer;
+}
