@@ -13,7 +13,8 @@ export default function AnswersPage(props) {
         asked_by: 'Anonymous',
         ask_date_time: Date.now,
         views: 0,
-        votes: 0
+        votes: 0,
+        userId: null
       });
   const [answers, setAnswers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -114,7 +115,7 @@ export default function AnswersPage(props) {
       const response = await axios.get(`http://localhost:8000/questions/${qid}`);
       setQuestion(response.data); // Update state with fetched question
 
-      const res = await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: 5 }, {
+      const res = await axios.post("http://localhost:8000/updateReputation", { userId: question.userId, changeOfPoints: 5 }, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -135,7 +136,7 @@ export default function AnswersPage(props) {
         const response = await axios.get(`http://localhost:8000/questions/${qid}`);
         setQuestion(response.data); // Update state with fetched question
 
-        const res = await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: -10 }, {
+        const res = await axios.post("http://localhost:8000/updateReputation", { userId: question.userId, changeOfPoints: -10 }, {
           headers: {
             'Content-Type': 'application/json'
           }
@@ -149,7 +150,7 @@ export default function AnswersPage(props) {
       }
     };
 
-    const handleAUpvote = async (aId) => {
+    const handleAUpvote = async (aId, userId) => {
       try {
         await axios.put(`http://localhost:8000/answers/${aId}/upvote`);
   
@@ -170,7 +171,7 @@ export default function AnswersPage(props) {
       }
     };
 
-    const handleADownvote = async (aId) => {
+    const handleADownvote = async (aId, userId) => {
       try {
         await axios.put(`http://localhost:8000/answers/${aId}/downvote`);
   
@@ -230,9 +231,9 @@ export default function AnswersPage(props) {
             <div key={answer._id} className="ansAndComments">
             <div className="qAnsStyle">
             <div className="a-vote-buttons">
-              <button className="a-upvote-btn" onClick={() => handleAUpvote(answer._id)} disabled={(!isLoggedIn) || (reputation < 50)}>Upvote</button>
+              <button className="a-upvote-btn" onClick={() => handleAUpvote(answer._id, answer.userId)} disabled={(!isLoggedIn) || (reputation < 50)}>Upvote</button>
               <p className="aVotes">{answer.votes}</p>
-              <button className="a-downvote-btn" onClick={() => handleADownvote(answer._id)} disabled={(!isLoggedIn) || (reputation < 50)}>Downvote</button>
+              <button className="a-downvote-btn" onClick={() => handleADownvote(answer._id, answer.userId)} disabled={(!isLoggedIn) || (reputation < 50)}>Downvote</button>
             </div>
               <p className="ansTextStyle" dangerouslySetInnerHTML={renderHyperlinks(answer.text)}></p>
               <div>
