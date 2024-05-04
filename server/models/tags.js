@@ -12,6 +12,10 @@ const tagSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
+  },
+  tagCount: {
+    type: Number,
+    default: 0
   }
 })
 tagSchema.virtual('url').get(function () {

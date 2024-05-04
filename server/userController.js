@@ -2,6 +2,9 @@ const bcrypt = require('bcrypt');
 const User = require('./models/users.js');
 const { connection } = require('./mongooseConnection.js');
 const Question = require('./models/questions.js');
+const Answer = require('./models/answers.js');
+const Tag = require('./models/tags.js');
+const Comment = require('./models/comments.js');
 
 const userController = {};
 
@@ -84,7 +87,7 @@ userController.loginUser = async (req, res) => {
 userController.logoutUser = async (req, res) => {
   const collection = connection.db.collection('sessions');
   // delete all sessions (there should only be 1)
-  const result = await collection.deleteMany({});
+  await collection.deleteMany({});
   // Date(0) returns a date from 1970 so the cookie is expired
   res.cookie('token', '', { expires: new Date(0) });
   return res.json({ success: true });
@@ -116,12 +119,14 @@ userController.getUserProfileData = async (req, res) => {
   try {
     const askedQuestions = await Question.find({ 'userId': userId });
     const answeredQuestions = await Question.find( { 'answers.userId': userId });
+    const createdTags = await Tag.find( { userId: userId } );
     return res.status(200).json({ 
       username: userData.username,
       date: userData.createdAt,
       reputation: userData.reputation,
       questions: askedQuestions,
       answers: answeredQuestions,
+      tags: createdTags
     });
   }  
   catch(error) {
@@ -131,10 +136,54 @@ userController.getUserProfileData = async (req, res) => {
 
 userController.getUsername = async (req, res) => {
   const { userId }= req.body;
+  // find all userData using userId
   const userData = await User.findById(userId);
   if (!userData) {
-    return res.status(200).json({ message: "Cannot find user profile" });
+    return res.status(200).json({ message: "Cannot find username" });
   }
   return res.status(200).json({ username: userData.username });
 }
+
+userController.deleteQuestion = async (req, res) => {
+  try {
+    // TODO: add itemType to generalize route?
+    const { questionId } = req.body;
+    // verify that the question exists
+    const question = await Question.findById(questionId);
+    if (!question) {
+      return res.status(200).json({ error: 'Question not found' });
+    }
+    // delete all answers associated with this question
+    for(const answer of question.answers) {
+      // let answerToDelete = await Answer.findById(answer._id);
+      // delete all comments associated with the answers
+      for(const comment of answer.comments) {
+        await Comment.findByIdAndDelete(comment._id);
+      }
+      await Answer.findByIdAndDelete(answer._id);
+    }
+    // delete or update all tags associated with this question
+    for(const tag of question.tags) {
+      // if the tag is only associated with this question, delete it
+      // otherwise, decrement tagCount
+      if(tag.tagCount == 1) {
+        await Tag.findByIdAndDelete(tag._id);
+      }
+      else {
+        await Tag.findByIdAndUpdate(tag._id, { $inc: { tagCount: -1 } });
+      }
+    }
+    // delete all comments associated with this question
+    for(const comment of question.comments) {
+      await Comment.findByIdAndDelete(comment._id);
+    }
+    // delete the question
+    await Question.findByIdAndDelete(questionId);
+    return res.status(200).json({ message: "Question successfully deleted" });
+  }
+  catch(error) {
+    console.error("Error deleting question:", error);
+  }
+}
+
 module.exports = userController;

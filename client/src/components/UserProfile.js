@@ -17,16 +17,29 @@ export default function UserProfile(props) {
         reputation: data[2],
         questions: data[3],
         answers: data[4],
-        // tags: data[5]
+        tags: data[5]
       });
     })
     .catch(error => {
       console.error('Error retrieving profile data:', error);
     });
   }, []);
+
+  const deleteQuestion = async (questionId) => {
+    try {
+      const res = await axios.post("http://localhost:8000/deleteQuestion", { questionId }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+    catch(error) {
+      console.error('Error deleting question:', error);
+    }
+  }
   
   // change what is shown based on mini menu
-  const handleClick = (page) => {
+  const handleMenuClick = (page) => {
     setMiniMenuPage(page);
   }
 
@@ -66,54 +79,66 @@ export default function UserProfile(props) {
         <div id="profile-content">
           <div id="mini-menu">
             <ul>
-              <li id="mini-q"><button className="mini-link" onClick={() => {handleClick("Q")}}>
+              <li id="mini-q"><button className="mini-link" onClick={() => {handleMenuClick("Q")}}>
                 Questions
                 </button></li>
-              <li id="mini-a"><button className="mini-link" onClick={() => {handleClick("A")}} >
+              <li id="mini-a"><button className="mini-link" onClick={() => {handleMenuClick("A")}} >
                 Answers
                 </button></li>
-              <li id="mini-t"><button className="mini-link" onClick={() => {handleClick("T")}} >
+              <li id="mini-t"><button className="mini-link" onClick={() => {handleMenuClick("T")}} >
                 Tags
                 </button></li>
             </ul>
           </div>
-        {profileData.questions && miniMenuPage === "Q" && profileData.questions.length > 0 && (
+        {profileData.questions && miniMenuPage === "Q" && (
           <div>
             <h2>Asked Questions</h2>
-            <ul className="mini-list">
-              {profileData.questions.map(question => (
-                <div className="mini-item" >
-                  <li key={question._id} onClick={()=>{changeActive("NewQuestion")}} >{question.title}</li>
-                  <button className="delete-button" >Delete</button>
-                </div>
-              ))}
-            </ul>
+            {profileData.questions.length > 0 ? (
+              <ul className="mini-list">
+                {profileData.questions.map(question => (
+                  <div className="mini-item" key={question._id} >
+                    <li onClick={()=>{changeActive("NewQuestion")}} >{question.title}</li>
+                    <button className="delete-button" onClick={() => {deleteQuestion(question._id)}} >Delete</button>
+                  </div>
+                ))}
+              </ul>
+            ) : (
+              <p className="empty-mini-list">You have not asked any questions yet.</p>
+            )}
           </div>
         )}
-        {profileData.answers && miniMenuPage === "A" && profileData.answers.length > 0 && (
+        {profileData.answers && miniMenuPage === "A" && (
           <div>
             <h2>Answered Questions</h2>
-            <ul className="mini-list">
-              {profileData.answers.map(answer => (
-                <div className="mini-item" >
-                  <li key={answer._id} onClick={()=>{changeActive("NewAnswer")}} >{answer.title}</li>
-                  <button className="delete-button" >Delete</button>
-                </div>
-              ))}
-            </ul>
+            {profileData.answers.length > 0 ? (
+              <ul className="mini-list" >
+                {profileData.answers.map(answer => (
+                  <div className="mini-item" key={answer._id} >
+                    <li onClick={()=>{changeActive("NewAnswer")}} >{answer.title}</li>
+                    <button className="delete-button" >Delete</button>
+                  </div>
+                ))}
+              </ul>
+            ) : (
+              <p className="empty-mini-list">You have not answered any questions yet.</p>
+            )}
           </div>
         )}
-        {profileData.tags && miniMenuPage === "T" && profileData.tags.length > 0 && (
+        {profileData.tags && miniMenuPage === "T" && (
           <div>
-            <h2>Tags</h2>
-            <ul className="mini-list">
-              {profileData.tags.map(tag => (
-                <div className="mini-item" >
-                  <li key={tag._id} >{tag.name}</li>
-                  <button className="delete-button" >Delete</button>
-                </div>
-              ))}
-            </ul>
+            <h2>Created Tags</h2>
+            {profileData.tags.length > 0 ? (
+              <ul className="mini-list">
+                {profileData.tags.map(tag => (
+                  <div className="mini-item" key={tag._id} >
+                    <li>{tag.name}</li>
+                    <button className="delete-button" >Delete</button>
+                  </div>
+                ))}
+              </ul>
+            ) : (
+              <p className="empty-mini-list">You have not created any tags yet.</p>
+            )}
           </div>
         )}
         </div>
@@ -132,13 +157,12 @@ async function retrieveProfileData() {
         'Content-Type': 'application/json'
       }
     });
-    const { username, date, reputation, questions, answers } = response2.data;
+    const { username, date, reputation, questions, answers, tags } = response2.data;
     const formattedDate = formatTime(date);
-    return [username, formattedDate, reputation, questions, answers];
-    // return [username, formattedDate, reputation, questions, answers, tags];
+    return [username, formattedDate, reputation, questions, answers, tags];
   }
   catch(error) {
-    console.error('Error getting user profile', error);
+    console.error('Error getting user profile:', error);
   }
 }
 
