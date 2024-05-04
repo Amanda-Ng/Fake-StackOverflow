@@ -102,7 +102,6 @@ export default function AnswersPage(props) {
     const indexOfLastAnswer = currentPage * answersPerPage;
     const indexOfFirstAnswer = indexOfLastAnswer - answersPerPage;
     const currentAnswers = sortedAnswers.slice(indexOfFirstAnswer, indexOfLastAnswer);
-    console.log(currentAnswers);
     const paginate = (pageNumber) => {
       setCurrentPage(pageNumber);
     };
@@ -120,7 +119,6 @@ export default function AnswersPage(props) {
           'Content-Type': 'application/json'
         }
       })
-      console.log(res.data.success);
   
       props.changeActive('Answers', qid);
   
@@ -141,7 +139,6 @@ export default function AnswersPage(props) {
             'Content-Type': 'application/json'
           }
         })
-        console.log(res.data.success);
   
       props.changeActive('Answers', qid);
   
@@ -162,7 +159,6 @@ export default function AnswersPage(props) {
             'Content-Type': 'application/json'
           }
         })
-        console.log(res.data.success);
   
       props.changeActive('Answers', qid);
   
@@ -183,7 +179,6 @@ export default function AnswersPage(props) {
             'Content-Type': 'application/json'
           }
         })
-        console.log(res.data.success);
   
       props.changeActive('Answers', qid);
   
