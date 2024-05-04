@@ -122,7 +122,8 @@ router.post('/questions', async (req, res) => {
         await existingTag.save()
         questionTags.push(existingTag)
       } else {
-        existingTag.tagCount++
+        existingTag.tagCount = (existingTag.tagCount || 0) + 1;
+        await existingTag.save();
         questionTags.push(existingTag)
       }
     }
