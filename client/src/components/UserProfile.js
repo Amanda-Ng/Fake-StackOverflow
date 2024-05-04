@@ -12,12 +12,13 @@ export default function UserProfile(props) {
     retrieveProfileData()
     .then(data => {
       setProfileData({
-        username: data[0],
-        date: data[1],
-        reputation: data[2],
-        questions: data[3],
-        answers: data[4],
-        tags: data[5]
+        userId: data[0],
+        username: data[1],
+        date: data[2],
+        reputation: data[3],
+        questions: data[4],
+        answeredQuestions: data[5],
+        tags: data[6]
       });
     })
     .catch(error => {
@@ -29,6 +30,7 @@ export default function UserProfile(props) {
     setupProfileData();
   }, []);
 
+  // delete a question and refresh the data
   const deleteQuestion = async (questionId) => {
     try {
       await axios.post("http://localhost:8000/deleteQuestion", { questionId }, {
@@ -44,6 +46,25 @@ export default function UserProfile(props) {
     setupProfileData();
   }
   
+  // delete a answer and refresh the data
+  const deleteAnswer = async (answeredQId) => {
+    try {
+      await axios.post("http://localhost:8000/deleteAnswer", { 
+        userId: profileData.userId,  
+        answeredQId: answeredQId
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+    catch(error) {
+      console.error('Error deleting answer:', error);
+    }
+    // to refresh the data shown after an answer is deleted
+    setupProfileData();
+  }
+
   // change what is shown based on mini menu
   const handleMenuClick = (page) => {
     setMiniMenuPage(page);
@@ -111,15 +132,15 @@ export default function UserProfile(props) {
             )}
           </div>
         )}
-        {profileData.answers && miniMenuPage === "A" && (
+        {profileData.answeredQuestions && miniMenuPage === "A" && (
           <div>
             <h2>Answered Questions</h2>
-            {profileData.answers.length > 0 ? (
+            {profileData.answeredQuestions.length > 0 ? (
               <ul className="mini-list" >
-                {profileData.answers.map(answer => (
-                  <div className="mini-item" key={answer._id} >
-                    <li onClick={()=>{changeActive("NewAnswer")}} >{answer.title}</li>
-                    <button className="delete-button" >Delete</button>
+                {profileData.answeredQuestions.map(answeredQ => (
+                  <div className="mini-item" key={answeredQ._id} >
+                    <li onClick={()=>{changeActive("NewAnswer")}} >{answeredQ.title}</li>
+                    <button className="delete-button" onClick={() => {deleteAnswer(answeredQ._id)}} >Delete</button>
                   </div>
                 ))}
               </ul>
@@ -161,9 +182,9 @@ async function retrieveProfileData() {
         'Content-Type': 'application/json'
       }
     });
-    const { username, date, reputation, questions, answers, tags } = response2.data;
+    const { username, date, reputation, questions, answeredQuestions, tags } = response2.data;
     const formattedDate = formatTime(date);
-    return [username, formattedDate, reputation, questions, answers, tags];
+    return [userId, username, formattedDate, reputation, questions, answeredQuestions, tags];
   }
   catch(error) {
     console.error('Error getting user profile:', error);

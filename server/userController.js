@@ -125,7 +125,7 @@ userController.getUserProfileData = async (req, res) => {
       date: userData.createdAt,
       reputation: userData.reputation,
       questions: askedQuestions,
-      answers: answeredQuestions,
+      answeredQuestions: answeredQuestions,
       tags: createdTags
     });
   }  
@@ -166,7 +166,6 @@ userController.deleteQuestion = async (req, res) => {
     }
     // delete all answers associated with this question
     for(const answer of question.answers) {
-      // let answerToDelete = await Answer.findById(answer._id);
       // delete all comments associated with the answers
       for(const comment of answer.comments) {
         await Comment.findByIdAndDelete(comment._id);
@@ -194,6 +193,33 @@ userController.deleteQuestion = async (req, res) => {
   }
   catch(error) {
     console.error("Error deleting question:", error);
+  }
+}
+userController.deleteAnswer = async (req, res) => {
+  try {
+    const { userId, answeredQId } = req.body;
+    // verify that the answer exists
+    const answeredQuestion = await Question.findById(answeredQId);
+    if (!answeredQuestion) {
+      return res.status(200).json({ error: 'Question not found' });
+    }
+    // delete the answer
+    // accounts for if a user submitted multiple answers to a question
+    for(const answer of answeredQuestion.answers) {
+      // convert ObjectId to String
+      if(answer.userId.toString() === userId ) {
+        // delete all comments associated with this answer
+        for(const comment of answer.comments) {
+          await Comment.findByIdAndDelete(comment._id);
+        }
+        // delete the answer
+        await Answer.findByIdAndDelete(answer._id);
+      }
+    }
+    return res.status(200).json({ message: "Answer successfully deleted" });
+  }
+  catch(error) {
+    console.error("Error deleting answer:", error);
   }
 }
 

@@ -576,10 +576,13 @@ router.post('/register', userController.registerUser);
 router.post('/loginUser', userController.loginUser);
 router.get('/getLoggedIn', userController.getLoggedIn);
 router.get('/logout', userController.logoutUser);
+
 router.post('/userProfile', userController.getUserProfileData);
+router.post('/deleteQuestion', userController.deleteQuestion);
+router.post('/deleteAnswer', userController.deleteAnswer);
+
 router.post('/username', userController.getUsername);
 router.post('/updateReputation', userController.updateReputation);
-router.post('/deleteQuestion', userController.deleteQuestion);
 
 // start server
 const server = app.listen(8000, () => {
