@@ -1,5 +1,5 @@
 import '../stylesheets/App.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 export default function NewQuestionForm(props) {
@@ -8,8 +8,42 @@ export default function NewQuestionForm(props) {
         questionText: '',
         questionSummary: '',
         questionTags: '',
-        questionUsername: ''
     });
+
+    const [loggedIn, setLoggedIn] = useState(false);
+    const [userId, setUserId] = useState(null);
+    const [username, setUsername] = useState('');
+
+    useEffect(() => {
+        const checkLoggedInStatus = async () => {
+          try {
+            const response = await axios.get('http://localhost:8000/getLoggedIn');
+            if (response.data.loggedIn) {
+              setLoggedIn(true);
+              setUserId(response.data.userId);
+            }
+          } catch (error) {
+            console.error('Error checking logged-in status:', error);
+          }
+        };
+    
+        checkLoggedInStatus();
+      }, []);
+    
+      useEffect(() => {
+        const fetchUserProfile = async () => {
+          if (loggedIn && userId) {
+            try {
+              const response = await axios.post('http://localhost:8000/userProfile', { userId });
+              setUsername(response.data.username);
+            } catch (error) {
+              console.error('Error fetching user profile:', error);
+            }
+          }
+        };
+    
+        fetchUserProfile();
+      }, [loggedIn, userId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -18,16 +52,17 @@ export default function NewQuestionForm(props) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const { questionTitle, questionText, questionSummary, questionTags, questionUsername } = formData;
+        const { questionTitle, questionText, questionSummary, questionTags } = formData;
 
-        if (validateQuestionForm(questionTitle, questionText, questionSummary, questionTags, questionUsername)) {
+        if (validateQuestionForm(questionTitle, questionText, questionSummary, questionTags)) {
             try {
                 await axios.post('http://localhost:8000/questions', {
                     title: questionTitle,
                     text: questionText,
                     summary: questionSummary,
                     tags: removeDuplicates(questionTags.toLowerCase().trim().split(/\s+/)),
-                    username: questionUsername
+                    username: username,
+                    userId: userId
                 }, {
                     headers: {
                         'Content-Type': 'application/json'
@@ -38,7 +73,6 @@ export default function NewQuestionForm(props) {
                     questionText: '',
                     questionSummary: '',
                     questionTags: '',
-                    questionUsername: ''
                 });
                 props.changeActive("Questions");
             } catch (error) {
@@ -63,8 +97,6 @@ export default function NewQuestionForm(props) {
                 <label htmlFor="qTags" className="form-header">Tags*</label><br />
                 <i className="form-instructions">Add keywords separated by whitespace</i><br />
                 <input type="text" id="qTags" name="questionTags" value={formData.questionTags} onChange={handleChange} /><br /><br />
-                <label htmlFor="qUsername" className="form-header">Username*</label><br />
-                <input type="text" id="qUsername" name="questionUsername" value={formData.questionUsername} onChange={handleChange} required /><br /><br />
                 <input type="submit" value="Post Question" id="post-btn" />
                 <p id="mandatory">* indicates mandatory fields</p>
             </form>
@@ -82,7 +114,7 @@ function removeDuplicates(arr) {
     return unique;
 }
 
-function validateQuestionForm(title, text, summary, tags, username) {
+function validateQuestionForm(title, text, summary, tags) {
     // regex matches (non-alphanumeric non-whitespace non-hyphen) || (more than 5 whitespace delimited terms) || (more than 20 characters per term)
     const tagsPattern = /[^\w\s-]|((?:\S+\s+){5,}\S+$)|\S{21,}/;
     // joins unique tags in tags and trim leading/trailing whitespace
@@ -104,7 +136,7 @@ function validateQuestionForm(title, text, summary, tags, username) {
         alert("Tags should be whitespace-separated, consisting of alphanumerics or hyphenated words. There should be 5 or less tags, and each 20 characters or less.");
         return false;
     }
-    if (title.trim() === '' || text.trim() === '' || summary.trim() === '' || tags.trim() === '' || username.trim() === '') {
+    if (title.trim() === '' || text.trim() === '' || summary.trim() === '' || tags.trim() === '') {
         alert("Please fill in all required fields.");
         return false;
     }

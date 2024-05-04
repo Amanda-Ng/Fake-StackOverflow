@@ -10,6 +10,43 @@ export default function QCommentsList(props) {
 
   const qid = props.qid;
 
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+      const checkLoggedInStatus = async () => {
+        try {
+          const response = await axios.get('http://localhost:8000/getLoggedIn');
+          if (response.data.loggedIn) {
+            setLoggedIn(true);
+            setUserId(response.data.userId);
+          }
+        } catch (error) {
+          console.error('Error checking logged-in status:', error);
+        }
+      };
+  
+      checkLoggedInStatus();
+    }, []);
+  
+    useEffect(() => {
+      const fetchUserProfile = async () => {
+        if (loggedIn && userId) {
+          try {
+            const response = await axios.post('http://localhost:8000/userProfile', { userId });
+            setUsername(response.data.username);
+          //   console.log(response.data.username);
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+          }
+        }
+      };
+  
+      fetchUserProfile();
+      // console.log(username);
+    }, [loggedIn, userId]);
+
   const checkLoggedInStatus = async () => {
     try {
       const response = await axios.get("http://localhost:8000/getLoggedIn");
@@ -59,7 +96,7 @@ export default function QCommentsList(props) {
 
       console.log(qid);
 
-      await axios.post(`http://localhost:8000/question/${qid}/comments`, { content: newComment }, {
+      await axios.post(`http://localhost:8000/question/${qid}/comments`, { content: newComment, username:username }, {
         headers: {
             'Content-Type': 'application/json'
         }

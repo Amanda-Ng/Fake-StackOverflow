@@ -107,7 +107,7 @@ router.get('/questions/:id', async (req, res) => {
 router.post('/questions', async (req, res) => {
   try {
     // Extract data from request body
-    const { title, text, summary, tags, username } = req.body
+    const { title, text, summary, tags, username, userId } = req.body
 
     const questionTags = []
 
@@ -134,6 +134,7 @@ router.post('/questions', async (req, res) => {
       summary,
       tags: questionTags,
       asked_by: username,
+      userId: userId,
       ask_date_time: new Date()
     })
 
@@ -155,12 +156,13 @@ router.post('/questions/:qid/answers', async (req, res) => {
     const { qid } = req.params
 
     // Extract the answer data from the request body
-    const { username, text } = req.body
+    const { username, text, userId } = req.body
 
     // Create a new answer object
     const newAnswer = new Answer({
       ans_by: username,
       text,
+      userId: userId,
       ans_date_time: new Date()
     })
 
@@ -238,11 +240,12 @@ router.post('/answer/:aid/comments', async (req, res) => {
   try {
     // Extract the answer id from the request parameters
     const { aid } = req.params
-    const { content } = req.body;
+    const { content, username } = req.body;
 
     // Create a new Comment instance with the provided content
     const newComment = new Comment({
-      content: content
+      content: content,
+      username: username
     });
 
     // Save the new comment to the database
@@ -267,11 +270,12 @@ router.post('/question/:qid/comments', async (req, res) => {
   try {
     // Extract the question id from the request parameters
     const { qid } = req.params
-    const { content } = req.body;
+    const { content, username } = req.body;
 
     // Create a new Comment instance with the provided content
     const newComment = new Comment({
-      content: content
+      content: content,
+      username: username
     });
 
     // Save the new comment to the database
