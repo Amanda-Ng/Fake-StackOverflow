@@ -21,8 +21,13 @@ export default function WelcomePage(props) {
   return (
     <>
     <div id="welcome">
-      <button onClick={() => {changeActive("Register")}} disabled = {isLoggedIn} >Register</button>
-      <button onClick={() => {changeActive("Login")}} disabled = {isLoggedIn} >Login</button>
+      <h1>Welcome to fakeStackOverflow!</h1>
+      <button onClick={() => {changeActive("Register")}} disabled = {isLoggedIn} >
+        Register
+      </button>
+      <button onClick={() => {changeActive("Login")}} disabled = {isLoggedIn} >
+        Login
+      </button>
       <button disabled = {isLoggedIn} >Guest</button>
     </div>
     {showNotif && 

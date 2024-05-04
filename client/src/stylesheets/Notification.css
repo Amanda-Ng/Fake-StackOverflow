@@ -1,4 +1,4 @@
-.notification {
+.notif {
   position: fixed;
   z-index: 30;
   bottom: 5%;
@@ -12,7 +12,7 @@
   transition: opacity 0.3s ease-in-out;
 }
 
-.notification.visible {
+.notif.visible {
   opacity: 1;
 }
 

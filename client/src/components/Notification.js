@@ -1,5 +1,5 @@
 import '../stylesheets/Notification.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Notification(props) {
   const message = props.message;
@@ -13,7 +13,7 @@ export default function Notification(props) {
   };
   
   return (
-    <div className={`notification ${visible ? 'visible' : ""}`}>
+    <div className={`notif ${visible ? 'visible' : ""}`}>
       <span className="close-button" onClick={handleClose}>&times;</span>
       <p>{message}</p>
     </div>

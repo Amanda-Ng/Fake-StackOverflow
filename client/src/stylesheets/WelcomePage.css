@@ -1,7 +1,35 @@
 #welcome {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 82vw;
   height: 78vh;
+}
+#welcome h1 {
+  margin-bottom: 70px;
+}
+#welcome button {
+  margin-bottom: 20px;
+  width: 200px;
+  padding: 10px 0;
+  font-size: 16px;
+  background-color: white;
+  color: rgb(48,144,226);
+  font-weight: bold;
+  border: 1.5px solid rgb(48,144,226);
+  border-radius: 15px;
+  cursor: pointer;
+}
+#welcome button:hover {
+  background-color: rgb(48,144,226);
+  color: white;
+  transition: background-color, 0.15s, ease-in-out;
+  cursor: pointer;
+}
+#welcome button:disabled {
+  background-color: rgb(227, 227, 227);
+  color: rgb(110, 110, 110);
+  border-color: rgb(110, 110, 110);
+  cursor: default;
 }
