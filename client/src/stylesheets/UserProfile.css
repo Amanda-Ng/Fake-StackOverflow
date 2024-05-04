@@ -60,6 +60,9 @@
   transition: color 150ms ease-in-out;
   cursor: pointer;
 }
+#mini-q {
+  background-color: rgb(219, 219, 219);
+}
 .empty-mini-list {
   font-size: 18px;
   padding: 20px;

@@ -50,11 +50,9 @@ export default function UserProfile(props) {
   }
 
   // change what mini menu link is highlighted based on current page
-  const miniQ = document.getElementById("mini-q");
-  if(miniQ) {
-    miniQ.style.backgroundColor = "rgb(219, 219, 219)";
-  }
   useEffect(() => {
+    // mini-q is highlighted initially in UserProfile.css
+    const miniQ = document.getElementById("mini-q");
     const miniA = document.getElementById("mini-a");
     const miniT = document.getElementById("mini-t");
     // check miniQ, miniA, and miniA are not null
@@ -72,7 +70,7 @@ export default function UserProfile(props) {
     else if(miniT) {
       miniT.style.backgroundColor = "rgb(219, 219, 219)";
     }
-  }, [miniMenuPage, miniQ]);
+  }, [miniMenuPage]);
 
   return (
     <div id="user-profile">
