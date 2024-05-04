@@ -314,6 +314,18 @@ body {
 .q-comment-item{
   display: flex;
 }
+.comment-metadata{
+  margin-left: 10px;
+}
+.cUser{
+  color: rgb(0, 180, 240);
+}
+.cTime{
+  color: lightgrey;
+}
+.cVotes{
+  margin-right: 15px;
+}
 .ans-pagination{
   padding-left: 10px;
   padding-bottom: 10px;
