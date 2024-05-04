@@ -1,7 +1,6 @@
 // Comments Document Schema
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const User = require('./users.js')
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
 // Define the Comment schema
 const commentSchema = new Schema({
@@ -21,6 +20,6 @@ const commentSchema = new Schema({
     type: Date,
     default: Date.now
   }
-});
+})
 
-module.exports = mongoose.model('Comment', commentSchema);
+module.exports = mongoose.model('Comment', commentSchema)
