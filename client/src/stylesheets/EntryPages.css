@@ -1,4 +1,4 @@
-#welcome, #registration {
+#welcome, #registration, #login {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -33,7 +33,7 @@
   border-color: rgb(110, 110, 110);
   cursor: default;
 }
-#registration-form {
+#registration-form, #login-form {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -50,10 +50,10 @@
   border: 1px solid rgb(214, 234, 253);
   border-radius: 5px;
 }
-#registration-form input::placeholder {
+#registration-form input::placeholder, #login-form input::placeholder {
   color: rgb(34, 34, 34);
 }
-#register-button {
+#register-button, #login-button {
   margin-top: 20px;
   padding: 10px 50px;
   font-size: 17px;
@@ -62,7 +62,7 @@
   border: 1px solid rgb(48,144,226);
   border-radius: 20px;
 }
-#register-button:hover {
+#register-button:hover, #login-button:hover {
   background-color: rgb(38, 113, 178);
   transition: background-color, 0.15s, ease-in-out;
   cursor: pointer;
