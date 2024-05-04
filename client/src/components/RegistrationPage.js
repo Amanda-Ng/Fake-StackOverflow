@@ -1,8 +1,14 @@
-import '../stylesheets/App.css';
+import '../stylesheets/EntryPages.css';
 import { useState } from 'react';
 import axios from 'axios';
+import Notification from './Notification';
 
 export default function RegistrationPage(props) {
+  // for showing notifications about incorrect 
+  const [notif, setNotif] = useState("");
+  const closeNotif = () => {
+    setNotif("");
+  }
   // empty registration form
   const [formData, setFormData] = useState({
     newUsername: '',
@@ -32,30 +38,35 @@ export default function RegistrationPage(props) {
           'Content-Type': 'application/json'
         }
       });
-      console.log(response.data.message);
-      if(response.data.message === "Successful registration") {
-        // TODO: alert should be replaced by actual UI notification
-        alert("Successful registration");
-        props.changeActive("Welcome");
+      const message = response.data.message;
+      setNotif(message);
+      if(message === "Successful registration") {
+        // delay changing active page to show successful notification message
+        setTimeout(() => {
+          props.changeActive("Login");
+        }, 1200);
       }
     } catch (error) {
         console.error('Error adding new user:', error);
     }
   };
-  // TODO: change password fields type to password (visible for testing)
   return (
+    <>
     <div id="registration">
+      <h1>Create an account on fakeStackOverflow</h1>
       <form onSubmit={handleSubmit} id="registration-form" method="POST" >
-        <label htmlFor="user" >Username</label>
-        <input type="text" id="user" name="newUsername" value={formData.newUsername} onChange={handleChange} required ></input>
-        <label htmlFor="email" >Email</label>
-        <input type="text" id="email" name="newEmail" value={formData.newEmail} onChange={handleChange} required ></input>
-        <label htmlFor="pw" >Password</label>
-        <input type="text" id="pw" name="newPassword" value={formData.newPassword} onChange={handleChange} required ></input>
-        <label htmlFor="rePw" >Re-enter Password</label>
-        <input type="text" id="rePw" name="rePassword" value={formData.rePassword} onChange={handleChange} required ></input>
-        <input type="submit" value="Register" />
+        <label htmlFor="user" ></label>
+        <input type="text" id="user" name="newUsername" value={formData.newUsername} onChange={handleChange} placeholder="Username" required ></input>
+        <label htmlFor="email" ></label>
+        <input type="text" id="email" name="newEmail" value={formData.newEmail} onChange={handleChange} placeholder="Email" required ></input>
+        <label htmlFor="pw" ></label>
+        <input type="password" id="pw" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="Password" required ></input>
+        <label htmlFor="rePw" ></label>
+        <input type="password" id="rePw" name="rePassword" value={formData.rePassword} onChange={handleChange} placeholder="Re-enter Password" required ></input>
+        <input id="register-button" type="submit" value="Register" />
       </form>
   </div> 
+  {notif && <Notification message={notif} onClose={closeNotif} />}
+  </>
   );
 }

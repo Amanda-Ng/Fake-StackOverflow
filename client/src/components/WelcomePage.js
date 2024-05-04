@@ -1,4 +1,4 @@
-import '../stylesheets/WelcomePage.css';
+import '../stylesheets/EntryPages.css';
 import { useState } from 'react';
 import axios from 'axios';
 import Notification from './Notification.js';
