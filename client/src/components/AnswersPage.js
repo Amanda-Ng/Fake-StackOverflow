@@ -13,7 +13,8 @@ export default function AnswersPage(props) {
         asked_by: 'Anonymous',
         ask_date_time: Date.now,
         views: 0,
-        votes: 0
+        votes: 0,
+        userId: null
       });
   const [answers, setAnswers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,6 +22,41 @@ export default function AnswersPage(props) {
   const answersPerPage = 5;
 
   const qid = props.qid;
+
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [reputation, setReputation] = useState(0);
+
+  useEffect(() => {
+      const checkLoggedInStatus = async () => {
+        try {
+          const response = await axios.get('http://localhost:8000/getLoggedIn');
+          if (response.data.loggedIn) {
+            setLoggedIn(true);
+            setUserId(response.data.userId);
+          }
+        } catch (error) {
+          console.error('Error checking logged-in status:', error);
+        }
+      };
+  
+      checkLoggedInStatus();
+    }, []);
+  
+    useEffect(() => {
+      const fetchUserProfile = async () => {
+        if (loggedIn && userId) {
+          try {
+            const response = await axios.post('http://localhost:8000/userProfile', { userId });
+            setReputation(response.data.reputation);
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+          }
+        }
+      };
+  
+      fetchUserProfile();
+    }, [loggedIn, userId]);
 
   // Function to check if user is logged in
   const checkLoggedInStatus = async () => {
@@ -66,18 +102,22 @@ export default function AnswersPage(props) {
     const indexOfLastAnswer = currentPage * answersPerPage;
     const indexOfFirstAnswer = indexOfLastAnswer - answersPerPage;
     const currentAnswers = sortedAnswers.slice(indexOfFirstAnswer, indexOfLastAnswer);
-    console.log(currentAnswers);
     const paginate = (pageNumber) => {
       setCurrentPage(pageNumber);
     };
 
-    // TODO: add reputation constraint and update reputation
     const handleQUpvote = async (qId) => {
       try {
         await axios.put(`http://localhost:8000/questions/${qId}/upvote`);
   
       const response = await axios.get(`http://localhost:8000/questions/${qid}`);
       setQuestion(response.data); // Update state with fetched question
+
+      const res = await axios.post("http://localhost:8000/updateReputation", { userId: question.userId, changeOfPoints: 5 }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
   
       props.changeActive('Answers', qid);
   
@@ -92,6 +132,12 @@ export default function AnswersPage(props) {
   
         const response = await axios.get(`http://localhost:8000/questions/${qid}`);
         setQuestion(response.data); // Update state with fetched question
+
+        const res = await axios.post("http://localhost:8000/updateReputation", { userId: question.userId, changeOfPoints: -10 }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
   
       props.changeActive('Answers', qid);
   
@@ -100,12 +146,18 @@ export default function AnswersPage(props) {
       }
     };
 
-    const handleAUpvote = async (aId) => {
+    const handleAUpvote = async (aId, userId) => {
       try {
         await axios.put(`http://localhost:8000/answers/${aId}/upvote`);
   
         const response = await axios.get(`http://localhost:8000/questions/${qid}/answers`);
         setAnswers(response.data); // Update state with fetched answers
+
+        const res = await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: 5 }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
   
       props.changeActive('Answers', qid);
   
@@ -114,12 +166,18 @@ export default function AnswersPage(props) {
       }
     };
 
-    const handleADownvote = async (aId) => {
+    const handleADownvote = async (aId, userId) => {
       try {
         await axios.put(`http://localhost:8000/answers/${aId}/downvote`);
   
         const response = await axios.get(`http://localhost:8000/questions/${qid}/answers`);
         setAnswers(response.data); // Update state with fetched answers
+
+        const res = await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: -10 }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
   
       props.changeActive('Answers', qid);
   
@@ -138,9 +196,9 @@ export default function AnswersPage(props) {
           <div>
             <h3 className="qAnsViews">{question.views} views</h3>
             <div className="q-vote-buttons">
-              <button className="q-upvote-btn" onClick={() => handleQUpvote(qid)} disabled={!isLoggedIn}>Upvote</button>
+              <button className="q-upvote-btn" onClick={() => handleQUpvote(qid)} disabled={(!isLoggedIn) || (reputation < 50)}>Upvote</button>
               <p className="qVotes">{question.votes}</p>
-              <button className="q-downvote-btn" onClick={() => handleQDownvote(qid)} disabled={!isLoggedIn}>Downvote</button>
+              <button className="q-downvote-btn" onClick={() => handleQDownvote(qid)} disabled={(!isLoggedIn) || (reputation < 50)}>Downvote</button>
             </div>
           </div>
 
@@ -167,9 +225,9 @@ export default function AnswersPage(props) {
             <div key={answer._id} className="ansAndComments">
             <div className="qAnsStyle">
             <div className="a-vote-buttons">
-              <button className="a-upvote-btn" onClick={() => handleAUpvote(answer._id)} disabled={!isLoggedIn}>Upvote</button>
+              <button className="a-upvote-btn" onClick={() => handleAUpvote(answer._id, answer.userId)} disabled={(!isLoggedIn) || (reputation < 50)}>Upvote</button>
               <p className="aVotes">{answer.votes}</p>
-              <button className="a-downvote-btn" onClick={() => handleADownvote(answer._id)} disabled={!isLoggedIn}>Downvote</button>
+              <button className="a-downvote-btn" onClick={() => handleADownvote(answer._id, answer.userId)} disabled={(!isLoggedIn) || (reputation < 50)}>Downvote</button>
             </div>
               <p className="ansTextStyle" dangerouslySetInnerHTML={renderHyperlinks(answer.text)}></p>
               <div>
@@ -222,7 +280,6 @@ function formatTime(date) {
     return `${month} ${day}, ${year} at ${hour}:${minute}`;
   }
 
-// TODO: add reputation constraint
 function renderHyperlinks(text) {
   const hyperlinkPattern = /\[([^\s]+)\]\((https?:\/\/[^\s]+)\)/g;
   return { __html: text.replace(hyperlinkPattern, '<a href="$2" target="_blank" style="color: rgb(48,144,226)">$1</a>') };

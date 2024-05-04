@@ -60,6 +60,12 @@
   transition: color 150ms ease-in-out;
   cursor: pointer;
 }
+.empty-mini-list {
+  font-size: 18px;
+  padding: 20px;
+  border: 1px solid rgb(176, 176, 176);
+  border-radius: 5px;
+}
 .delete-button {
   padding: 5px 10px;
   height: 30px;

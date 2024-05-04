@@ -1,5 +1,5 @@
 import '../stylesheets/App.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 export default function NewQuestionForm(props) {
@@ -8,8 +8,44 @@ export default function NewQuestionForm(props) {
         questionText: '',
         questionSummary: '',
         questionTags: '',
-        questionUsername: ''
     });
+
+    const [loggedIn, setLoggedIn] = useState(false);
+    const [userId, setUserId] = useState(null);
+    const [username, setUsername] = useState('');
+    const [reputation, setReputation] = useState(0);
+
+    useEffect(() => {
+        const checkLoggedInStatus = async () => {
+          try {
+            const response = await axios.get('http://localhost:8000/getLoggedIn');
+            if (response.data.loggedIn) {
+              setLoggedIn(true);
+              setUserId(response.data.userId);
+            }
+          } catch (error) {
+            console.error('Error checking logged-in status:', error);
+          }
+        };
+    
+        checkLoggedInStatus();
+      }, []);
+    
+      useEffect(() => {
+        const fetchUserProfile = async () => {
+          if (loggedIn && userId) {
+            try {
+              const response = await axios.post('http://localhost:8000/userProfile', { userId });
+              setUsername(response.data.username);
+              setReputation(response.data.reputation);
+            } catch (error) {
+              console.error('Error fetching user profile:', error);
+            }
+          }
+        };
+    
+        fetchUserProfile();
+      }, [loggedIn, userId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -18,16 +54,18 @@ export default function NewQuestionForm(props) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const { questionTitle, questionText, questionSummary, questionTags, questionUsername } = formData;
+        const { questionTitle, questionText, questionSummary, questionTags } = formData;
 
-        if (validateQuestionForm(questionTitle, questionText, questionSummary, questionTags, questionUsername)) {
+        const isValid = await validateQuestionForm(questionTitle, questionText, questionSummary, questionTags, reputation);
+        if (isValid) {
             try {
                 await axios.post('http://localhost:8000/questions', {
                     title: questionTitle,
                     text: questionText,
                     summary: questionSummary,
                     tags: removeDuplicates(questionTags.toLowerCase().trim().split(/\s+/)),
-                    username: questionUsername
+                    username: username,
+                    userId: userId
                 }, {
                     headers: {
                         'Content-Type': 'application/json'
@@ -38,7 +76,6 @@ export default function NewQuestionForm(props) {
                     questionText: '',
                     questionSummary: '',
                     questionTags: '',
-                    questionUsername: ''
                 });
                 props.changeActive("Questions");
             } catch (error) {
@@ -63,8 +100,6 @@ export default function NewQuestionForm(props) {
                 <label htmlFor="qTags" className="form-header">Tags*</label><br />
                 <i className="form-instructions">Add keywords separated by whitespace</i><br />
                 <input type="text" id="qTags" name="questionTags" value={formData.questionTags} onChange={handleChange} /><br /><br />
-                <label htmlFor="qUsername" className="form-header">Username*</label><br />
-                <input type="text" id="qUsername" name="questionUsername" value={formData.questionUsername} onChange={handleChange} required /><br /><br />
                 <input type="submit" value="Post Question" id="post-btn" />
                 <p id="mandatory">* indicates mandatory fields</p>
             </form>
@@ -82,11 +117,12 @@ function removeDuplicates(arr) {
     return unique;
 }
 
-function validateQuestionForm(title, text, summary, tags, username) {
+async function validateQuestionForm(title, text, summary, tags, reputation) {
     // regex matches (non-alphanumeric non-whitespace non-hyphen) || (more than 5 whitespace delimited terms) || (more than 20 characters per term)
     const tagsPattern = /[^\w\s-]|((?:\S+\s+){5,}\S+$)|\S{21,}/;
     // joins unique tags in tags and trim leading/trailing whitespace
     const uniqueTags = removeDuplicates(tags.trim().toLowerCase().split(/\s+/)).join(' ');
+    const tagsList = removeDuplicates(tags.trim().toLowerCase().split(/\s+/));
 
     if (title.length > 50) {
         alert("Question title should be 50 characters or less.");
@@ -98,13 +134,29 @@ function validateQuestionForm(title, text, summary, tags, username) {
         return false;
     }
 
-    // TODO: add reputation constraint
+  // New tag reputation constraint
+  try {
+    const response = await axios.get('http://localhost:8000/tags');
+    const existingTags = response.data.map((tag) => tag.name.toLowerCase());
+
+    // Check each tag against existing tags in the database
+    for (const tag of tagsList) {
+      if ((!existingTags.includes(tag)) && (reputation < 50)) {
+        alert("User reputation should be at least 50 to add a new tag.");
+        return false;
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    return false;
+  }
+
     // true if any of the regex groups match and executes if block
     if (tagsPattern.test(uniqueTags)) {
         alert("Tags should be whitespace-separated, consisting of alphanumerics or hyphenated words. There should be 5 or less tags, and each 20 characters or less.");
         return false;
     }
-    if (title.trim() === '' || text.trim() === '' || summary.trim() === '' || tags.trim() === '' || username.trim() === '') {
+    if (title.trim() === '' || text.trim() === '' || summary.trim() === '' || tags.trim() === '') {
         alert("Please fill in all required fields.");
         return false;
     }
