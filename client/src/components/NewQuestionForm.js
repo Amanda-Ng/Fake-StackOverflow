@@ -13,6 +13,7 @@ export default function NewQuestionForm(props) {
     const [loggedIn, setLoggedIn] = useState(false);
     const [userId, setUserId] = useState(null);
     const [username, setUsername] = useState('');
+    const [reputation, setReputation] = useState(0);
 
     useEffect(() => {
         const checkLoggedInStatus = async () => {
@@ -36,6 +37,7 @@ export default function NewQuestionForm(props) {
             try {
               const response = await axios.post('http://localhost:8000/userProfile', { userId });
               setUsername(response.data.username);
+              setReputation(response.data.reputation);
             } catch (error) {
               console.error('Error fetching user profile:', error);
             }
@@ -54,7 +56,8 @@ export default function NewQuestionForm(props) {
         e.preventDefault();
         const { questionTitle, questionText, questionSummary, questionTags } = formData;
 
-        if (validateQuestionForm(questionTitle, questionText, questionSummary, questionTags)) {
+        const isValid = await validateQuestionForm(questionTitle, questionText, questionSummary, questionTags, reputation);
+        if (isValid) {
             try {
                 await axios.post('http://localhost:8000/questions', {
                     title: questionTitle,
@@ -114,11 +117,12 @@ function removeDuplicates(arr) {
     return unique;
 }
 
-function validateQuestionForm(title, text, summary, tags) {
+async function validateQuestionForm(title, text, summary, tags, reputation) {
     // regex matches (non-alphanumeric non-whitespace non-hyphen) || (more than 5 whitespace delimited terms) || (more than 20 characters per term)
     const tagsPattern = /[^\w\s-]|((?:\S+\s+){5,}\S+$)|\S{21,}/;
     // joins unique tags in tags and trim leading/trailing whitespace
     const uniqueTags = removeDuplicates(tags.trim().toLowerCase().split(/\s+/)).join(' ');
+    const tagsList = removeDuplicates(tags.trim().toLowerCase().split(/\s+/));
 
     if (title.length > 50) {
         alert("Question title should be 50 characters or less.");
@@ -129,6 +133,23 @@ function validateQuestionForm(title, text, summary, tags) {
         alert("Question summary should be 140 characters or less.");
         return false;
     }
+
+  // New tag reputation constraint
+  try {
+    const response = await axios.get('http://localhost:8000/tags');
+    const existingTags = response.data.map((tag) => tag.name.toLowerCase());
+
+    // Check each tag against existing tags in the database
+    for (const tag of tagsList) {
+      if ((!existingTags.includes(tag)) && (reputation < 50)) {
+        alert("User reputation should be at least 50 to add a new tag.");
+        return false;
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    return false;
+  }
 
     // TODO: add reputation constraint
     // true if any of the regex groups match and executes if block

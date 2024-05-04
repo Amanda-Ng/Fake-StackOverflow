@@ -22,6 +22,41 @@ export default function AnswersPage(props) {
 
   const qid = props.qid;
 
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [reputation, setReputation] = useState(0);
+
+  useEffect(() => {
+      const checkLoggedInStatus = async () => {
+        try {
+          const response = await axios.get('http://localhost:8000/getLoggedIn');
+          if (response.data.loggedIn) {
+            setLoggedIn(true);
+            setUserId(response.data.userId);
+          }
+        } catch (error) {
+          console.error('Error checking logged-in status:', error);
+        }
+      };
+  
+      checkLoggedInStatus();
+    }, []);
+  
+    useEffect(() => {
+      const fetchUserProfile = async () => {
+        if (loggedIn && userId) {
+          try {
+            const response = await axios.post('http://localhost:8000/userProfile', { userId });
+            setReputation(response.data.reputation);
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+          }
+        }
+      };
+  
+      fetchUserProfile();
+    }, [loggedIn, userId]);
+
   // Function to check if user is logged in
   const checkLoggedInStatus = async () => {
     try {
@@ -78,6 +113,13 @@ export default function AnswersPage(props) {
   
       const response = await axios.get(`http://localhost:8000/questions/${qid}`);
       setQuestion(response.data); // Update state with fetched question
+
+      const res = await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: 5 }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      console.log(res.data.success);
   
       props.changeActive('Answers', qid);
   
@@ -92,6 +134,13 @@ export default function AnswersPage(props) {
   
         const response = await axios.get(`http://localhost:8000/questions/${qid}`);
         setQuestion(response.data); // Update state with fetched question
+
+        const res = await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: -10 }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        console.log(res.data.success);
   
       props.changeActive('Answers', qid);
   
@@ -106,6 +155,13 @@ export default function AnswersPage(props) {
   
         const response = await axios.get(`http://localhost:8000/questions/${qid}/answers`);
         setAnswers(response.data); // Update state with fetched answers
+
+        const res = await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: 5 }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        console.log(res.data.success);
   
       props.changeActive('Answers', qid);
   
@@ -120,6 +176,13 @@ export default function AnswersPage(props) {
   
         const response = await axios.get(`http://localhost:8000/questions/${qid}/answers`);
         setAnswers(response.data); // Update state with fetched answers
+
+        const res = await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: -10 }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        console.log(res.data.success);
   
       props.changeActive('Answers', qid);
   
@@ -138,9 +201,9 @@ export default function AnswersPage(props) {
           <div>
             <h3 className="qAnsViews">{question.views} views</h3>
             <div className="q-vote-buttons">
-              <button className="q-upvote-btn" onClick={() => handleQUpvote(qid)} disabled={!isLoggedIn}>Upvote</button>
+              <button className="q-upvote-btn" onClick={() => handleQUpvote(qid)} disabled={(!isLoggedIn) || (reputation < 50)}>Upvote</button>
               <p className="qVotes">{question.votes}</p>
-              <button className="q-downvote-btn" onClick={() => handleQDownvote(qid)} disabled={!isLoggedIn}>Downvote</button>
+              <button className="q-downvote-btn" onClick={() => handleQDownvote(qid)} disabled={(!isLoggedIn) || (reputation < 50)}>Downvote</button>
             </div>
           </div>
 
@@ -167,9 +230,9 @@ export default function AnswersPage(props) {
             <div key={answer._id} className="ansAndComments">
             <div className="qAnsStyle">
             <div className="a-vote-buttons">
-              <button className="a-upvote-btn" onClick={() => handleAUpvote(answer._id)} disabled={!isLoggedIn}>Upvote</button>
+              <button className="a-upvote-btn" onClick={() => handleAUpvote(answer._id)} disabled={(!isLoggedIn) || (reputation < 50)}>Upvote</button>
               <p className="aVotes">{answer.votes}</p>
-              <button className="a-downvote-btn" onClick={() => handleADownvote(answer._id)} disabled={!isLoggedIn}>Downvote</button>
+              <button className="a-downvote-btn" onClick={() => handleADownvote(answer._id)} disabled={(!isLoggedIn) || (reputation < 50)}>Downvote</button>
             </div>
               <p className="ansTextStyle" dangerouslySetInnerHTML={renderHyperlinks(answer.text)}></p>
               <div>

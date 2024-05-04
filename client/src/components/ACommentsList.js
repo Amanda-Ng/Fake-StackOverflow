@@ -14,6 +14,7 @@ export default function ACommentsList(props) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [userId, setUserId] = useState(null);
   const [username, setUsername] = useState('');
+  const [reputation, setReputation] = useState(0);
 
   useEffect(() => {
       const checkLoggedInStatus = async () => {
@@ -37,7 +38,7 @@ export default function ACommentsList(props) {
           try {
             const response = await axios.post('http://localhost:8000/userProfile', { userId });
             setUsername(response.data.username);
-          //   console.log(response.data.username);
+            setReputation(response.data.reputation);
           } catch (error) {
             console.error('Error fetching user profile:', error);
           }
@@ -45,7 +46,6 @@ export default function ACommentsList(props) {
       };
   
       fetchUserProfile();
-      // console.log(username);
     }, [loggedIn, userId]);
 
   const checkLoggedInStatus = async () => {
@@ -91,7 +91,7 @@ export default function ACommentsList(props) {
   const handleCommentSubmit = async (event) => {
     event.preventDefault();
 
-    if (validateCommentForm(newComment)) {
+    if (validateCommentForm(newComment, reputation)) {
 
     try {
       // Send POST request to add new comment
@@ -204,11 +204,16 @@ function formatTime(date) {
   return `${month} ${day}, ${year} at ${hour}:${minute}`;
 }
 
-// TODO: add reputation constraint
-function validateCommentForm(content) {
+function validateCommentForm(content, reputation) {
   if (content.length > 140) {
     alert("Comment content should be 140 characters or less.");
     return false;
 }
+
+if (reputation < 50) {
+  alert("User reputation should be at least 50.");
+  return false;
+}
+
   return true;
 }
