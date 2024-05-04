@@ -105,31 +105,36 @@ userController.getLoggedIn = async (req, res) => {
       return res.status(200).json({ loggedIn: false });
   }
 };
-userController.getUserData = async (req, res) => {
+
+userController.getUserProfileData = async (req, res) => {
   const { userId }= req.body;
   const userData = await User.findById(userId);
   if (!userData) {
     return res.status(200).json({ message: "Cannot find user profile" });
   }
-  const questionsList = await Question.find();
-  // const answeredQuestions = [];
-  // for(const answer of userData["answers"]) {
-  //   try {
-  //     let answeredQ = await Question.findOne({ 'answers._id': answer._id });
-  //     answeredQuestions.push(answeredQ);
-  //   }
-  //   catch(error) {
-  //     console.error("Error finding answered questions:", error);
-  //   }
-  // }
-  return res.status(200).json({ 
-    username: userData.username,
-    date: userData.createdAt,
-    rep: userData.reputation,
-    message: questionsList
-    // questions: userData["questions"],
-    // answers: answeredQuestions,
-    // tags: userData["tags"],
-  });
+  // get all necessary profile information to return
+  try {
+    const askedQuestions = await Question.find({ 'userId': userId });
+    const answeredQuestions = await Question.find( { 'answers.userId': userId });
+    return res.status(200).json({ 
+      username: userData.username,
+      date: userData.createdAt,
+      reputation: userData.reputation,
+      questions: askedQuestions,
+      answers: answeredQuestions,
+    });
+  }  
+  catch(error) {
+    console.error("Error retrieving user profile information:", error);
+  }
+}
+
+userController.getUsername = async (req, res) => {
+  const { userId }= req.body;
+  const userData = await User.findById(userId);
+  if (!userData) {
+    return res.status(200).json({ message: "Cannot find user profile" });
+  }
+  return res.status(200).json({ username: userData.username });
 }
 module.exports = userController;
