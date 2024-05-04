@@ -118,7 +118,7 @@ router.post('/questions', async (req, res) => {
       // If tag doesn't exist, add it to the database
       if (!existingTag) {
         // Create a new tag object
-        existingTag = new Tag({ name: tag })
+        existingTag = new Tag({ name: tag, userId: userId })
         // Save the new tag to the database
         await existingTag.save()
         questionTags.push(existingTag)
