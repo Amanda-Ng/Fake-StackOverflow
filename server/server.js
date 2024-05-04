@@ -578,6 +578,7 @@ router.get('/getLoggedIn', userController.getLoggedIn);
 router.get('/logout', userController.logoutUser);
 router.post('/userProfile', userController.getUserProfileData);
 router.post('/username', userController.getUsername);
+router.post('/updateReputation', userController.updateReputation);
 router.post('/deleteQuestion', userController.deleteQuestion);
 
 // start server

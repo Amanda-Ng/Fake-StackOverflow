@@ -144,6 +144,17 @@ userController.getUsername = async (req, res) => {
   return res.status(200).json({ username: userData.username });
 }
 
+userController.updateReputation = async (req, res) => {
+  const { userId, changeOfPoints }= req.body;
+  // find all userData using userId
+  const userData = await User.findById(userId);
+  if (!userData) {
+    return res.status(200).json({ success: false });
+  }
+  await User.findByIdAndUpdate(userId, { $inc: { reputation: changeOfPoints } });
+  return res.status(200).json({ success: true });
+}
+
 userController.deleteQuestion = async (req, res) => {
   try {
     // TODO: add itemType to generalize route?
