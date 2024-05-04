@@ -132,30 +132,8 @@ userController.getUserProfileData = async (req, res) => {
   }
 }
 
-userController.getUsername = async (req, res) => {
-  const { userId } = req.body
-  // find all userData using userId
-  const userData = await User.findById(userId)
-  if (!userData) {
-    return res.status(200).json({ message: 'Cannot find username' })
-  }
-  return res.status(200).json({ username: userData.username })
-}
-
-userController.updateReputation = async (req, res) => {
-  const { userId, changeOfPoints } = req.body
-  // find all userData using userId
-  const userData = await User.findById(userId)
-  if (!userData) {
-    return res.status(200).json({ success: false })
-  }
-  await User.findByIdAndUpdate(userId, { $inc: { reputation: changeOfPoints } })
-  return res.status(200).json({ success: true })
-}
-
 userController.deleteQuestion = async (req, res) => {
   try {
-    // TODO: add itemType to generalize route?
     const { questionId } = req.body
     // verify that the question exists
     const question = await Question.findById(questionId)
@@ -192,20 +170,21 @@ userController.deleteQuestion = async (req, res) => {
     console.error("Error deleting question:", error);
   }
 }
+
 userController.deleteAnswer = async (req, res) => {
   try {
     const { userId, answeredQId } = req.body;
-    // verify that the answer exists
+    // verify that the answered question exists
     const answeredQuestion = await Question.findById(answeredQId);
     if (!answeredQuestion) {
       return res.status(200).json({ error: 'Question not found' });
     }
-    // delete the answer
+    // delete the Answer document
     // accounts for if a user submitted multiple answers to a question
     for(const answer of answeredQuestion.answers) {
       // convert ObjectId to String
       if(answer.userId.toString() === userId ) {
-        // delete all comments associated with this answer
+        // first delete all comments associated with this answer
         for(const comment of answer.comments) {
           await Comment.findByIdAndDelete(comment._id);
         }
@@ -213,11 +192,36 @@ userController.deleteAnswer = async (req, res) => {
         await Answer.findByIdAndDelete(answer._id);
       }
     }
+    // update Question document to remove this answer
+    await Question.updateOne({ _id: answeredQId }, { $pull: { answers: { userId: userId } } });
+    // return new list of answeredQuestions after deleting an answer
     return res.status(200).json({ message: "Answer successfully deleted" });
   }
   catch(error) {
     console.error("Error deleting answer:", error);
   }
 }
+
+userController.getUsername = async (req, res) => {
+  const { userId } = req.body
+  // find all userData using userId
+  const userData = await User.findById(userId)
+  if (!userData) {
+    return res.status(200).json({ message: 'Cannot find username' })
+  }
+  return res.status(200).json({ username: userData.username })
+}
+
+userController.updateReputation = async (req, res) => {
+  const { userId, changeOfPoints } = req.body
+  // find all userData using userId
+  const userData = await User.findById(userId)
+  if (!userData) {
+    return res.status(200).json({ success: false })
+  }
+  await User.findByIdAndUpdate(userId, { $inc: { reputation: changeOfPoints } })
+  return res.status(200).json({ success: true })
+}
+
 
 module.exports = userController

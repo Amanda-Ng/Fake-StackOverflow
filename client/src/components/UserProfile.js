@@ -8,7 +8,7 @@ export default function UserProfile(props) {
   const [miniMenuPage, setMiniMenuPage] = useState("Q");
 
   // put all the data retrieved into profileData
-  const setupProfileData = async () => {
+  const fillProfileData = async () => {
     retrieveProfileData()
     .then(data => {
       setProfileData({
@@ -27,7 +27,7 @@ export default function UserProfile(props) {
   }
   // runs only once using useEffect and an empty dependency array
   useEffect(() => {
-    setupProfileData();
+    fillProfileData();
   }, []);
 
   // delete a question and refresh the data
@@ -43,7 +43,7 @@ export default function UserProfile(props) {
       console.error('Error deleting question:', error);
     }
     // to refresh the data shown after a question is deleted
-    setupProfileData();
+    fillProfileData();
   }
   
   // delete a answer and refresh the data
@@ -61,8 +61,8 @@ export default function UserProfile(props) {
     catch(error) {
       console.error('Error deleting answer:', error);
     }
-    // to refresh the data shown after an answer is deleted
-    setupProfileData();
+    // // to refresh the data shown after an answer is deleted
+    fillProfileData();
   }
 
   // change what is shown based on mini menu
