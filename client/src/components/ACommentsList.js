@@ -82,7 +82,6 @@ export default function ACommentsList(props) {
   const totalPages = Math.ceil(comments.length / commentsPerPage);
   const endIndex = currentPage * commentsPerPage;
   const startIndex = endIndex - commentsPerPage;
-  // const currentComments = comments.slice(startIndex, endIndex);
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -122,14 +121,6 @@ export default function ACommentsList(props) {
     try {
       await axios.put(`http://localhost:8000/answers/comments/${commentId}/votes`);
 
-    // // Update the local comments state to reflect the updated votes
-    // const updatedComments = comments.map((comment) => {
-    //   if (comment._id === commentId) {
-    //     return { ...comment, votes: comment.votes + 1 };
-    //   }
-    //   return comment;
-    // });
-    // setComments(updatedComments);
     const response = await axios.get(`http://localhost:8000/answers/${aid}/comments`);
     setComments(response.data); // Update state with fetched comments
 

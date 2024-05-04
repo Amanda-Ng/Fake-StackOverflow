@@ -141,7 +141,6 @@ export default function QCommentsList(props) {
             <span className="cVotes">{comment.votes}</span>
             <span>{comment.content}</span>
             <span className="comment-metadata">
-              {/* TODO: add username */}
                 <span className="cUser"> - {comment.username}</span>
                 <span className="cTime"> commented {formatTime(comment.createdAt)}</span>
             </span>

@@ -151,7 +151,6 @@ async function validateQuestionForm(title, text, summary, tags, reputation) {
     return false;
   }
 
-    // TODO: add reputation constraint
     // true if any of the regex groups match and executes if block
     if (tagsPattern.test(uniqueTags)) {
         alert("Tags should be whitespace-separated, consisting of alphanumerics or hyphenated words. There should be 5 or less tags, and each 20 characters or less.");

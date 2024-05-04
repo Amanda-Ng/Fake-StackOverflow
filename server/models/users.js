@@ -1,8 +1,5 @@
 // User Document Schema
 const mongoose = require('mongoose')
-// const Tag = require('./tags.js');
-// const Answer = require('./answers.js');
-// const Question = require('./questions.js');
 
 const Schema = mongoose.Schema
 const UserSchema = new Schema(

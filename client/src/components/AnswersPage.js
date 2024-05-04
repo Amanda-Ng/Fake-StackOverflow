@@ -106,7 +106,6 @@ export default function AnswersPage(props) {
       setCurrentPage(pageNumber);
     };
 
-    // TODO: add reputation constraint and update reputation
     const handleQUpvote = async (qId) => {
       try {
         await axios.put(`http://localhost:8000/questions/${qId}/upvote`);
@@ -281,7 +280,6 @@ function formatTime(date) {
     return `${month} ${day}, ${year} at ${hour}:${minute}`;
   }
 
-// TODO: add reputation constraint
 function renderHyperlinks(text) {
   const hyperlinkPattern = /\[([^\s]+)\]\((https?:\/\/[^\s]+)\)/g;
   return { __html: text.replace(hyperlinkPattern, '<a href="$2" target="_blank" style="color: rgb(48,144,226)">$1</a>') };
