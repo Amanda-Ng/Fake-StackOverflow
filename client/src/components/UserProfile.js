@@ -7,8 +7,8 @@ export default function UserProfile(props) {
   const [profileData, setProfileData] = useState(null);
   const [miniMenuPage, setMiniMenuPage] = useState("Q");
 
-  // runs only once using useEffect and an empty dependency array
-  useEffect(() => {
+  // put all the data retrieved into profileData
+  const setupProfileData = async () => {
     retrieveProfileData()
     .then(data => {
       setProfileData({
@@ -23,11 +23,15 @@ export default function UserProfile(props) {
     .catch(error => {
       console.error('Error retrieving profile data:', error);
     });
+  }
+  // runs only once using useEffect and an empty dependency array
+  useEffect(() => {
+    setupProfileData();
   }, []);
 
   const deleteQuestion = async (questionId) => {
     try {
-      const res = await axios.post("http://localhost:8000/deleteQuestion", { questionId }, {
+      await axios.post("http://localhost:8000/deleteQuestion", { questionId }, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -36,6 +40,8 @@ export default function UserProfile(props) {
     catch(error) {
       console.error('Error deleting question:', error);
     }
+    // to refresh the data shown after a question is deleted
+    setupProfileData();
   }
   
   // change what is shown based on mini menu
