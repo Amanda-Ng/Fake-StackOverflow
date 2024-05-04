@@ -11,6 +11,43 @@ export default function ACommentsList(props) {
   const qid = props.qid;
   const aid = props.aid;
 
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [username, setUsername] = useState('');
+  const [reputation, setReputation] = useState(0);
+
+  useEffect(() => {
+      const checkLoggedInStatus = async () => {
+        try {
+          const response = await axios.get('http://localhost:8000/getLoggedIn');
+          if (response.data.loggedIn) {
+            setLoggedIn(true);
+            setUserId(response.data.userId);
+          }
+        } catch (error) {
+          console.error('Error checking logged-in status:', error);
+        }
+      };
+  
+      checkLoggedInStatus();
+    }, []);
+  
+    useEffect(() => {
+      const fetchUserProfile = async () => {
+        if (loggedIn && userId) {
+          try {
+            const response = await axios.post('http://localhost:8000/userProfile', { userId });
+            setUsername(response.data.username);
+            setReputation(response.data.reputation);
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+          }
+        }
+      };
+  
+      fetchUserProfile();
+    }, [loggedIn, userId]);
+
   const checkLoggedInStatus = async () => {
     try {
       const response = await axios.get("http://localhost:8000/getLoggedIn");
@@ -45,7 +82,6 @@ export default function ACommentsList(props) {
   const totalPages = Math.ceil(comments.length / commentsPerPage);
   const endIndex = currentPage * commentsPerPage;
   const startIndex = endIndex - commentsPerPage;
-  // const currentComments = comments.slice(startIndex, endIndex);
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -54,11 +90,11 @@ export default function ACommentsList(props) {
   const handleCommentSubmit = async (event) => {
     event.preventDefault();
 
-    if (validateCommentForm(newComment)) {
+    if (validateCommentForm(newComment, reputation)) {
 
     try {
       // Send POST request to add new comment
-      await axios.post(`http://localhost:8000/answer/${aid}/comments`, { content: newComment }, {
+      await axios.post(`http://localhost:8000/answer/${aid}/comments`, { content: newComment, username: username }, {
         headers: {
             'Content-Type': 'application/json'
         }
@@ -85,14 +121,6 @@ export default function ACommentsList(props) {
     try {
       await axios.put(`http://localhost:8000/answers/comments/${commentId}/votes`);
 
-    // // Update the local comments state to reflect the updated votes
-    // const updatedComments = comments.map((comment) => {
-    //   if (comment._id === commentId) {
-    //     return { ...comment, votes: comment.votes + 1 };
-    //   }
-    //   return comment;
-    // });
-    // setComments(updatedComments);
     const response = await axios.get(`http://localhost:8000/answers/${aid}/comments`);
     setComments(response.data); // Update state with fetched comments
 
@@ -167,11 +195,16 @@ function formatTime(date) {
   return `${month} ${day}, ${year} at ${hour}:${minute}`;
 }
 
-// TODO: add reputation constraint
-function validateCommentForm(content) {
+function validateCommentForm(content, reputation) {
   if (content.length > 140) {
     alert("Comment content should be 140 characters or less.");
     return false;
 }
+
+if (reputation < 50) {
+  alert("User reputation should be at least 50.");
+  return false;
+}
+
   return true;
 }

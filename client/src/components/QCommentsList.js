@@ -10,6 +10,43 @@ export default function QCommentsList(props) {
 
   const qid = props.qid;
 
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [username, setUsername] = useState('');
+  const [reputation, setReputation] = useState(0);
+
+  useEffect(() => {
+      const checkLoggedInStatus = async () => {
+        try {
+          const response = await axios.get('http://localhost:8000/getLoggedIn');
+          if (response.data.loggedIn) {
+            setLoggedIn(true);
+            setUserId(response.data.userId);
+          }
+        } catch (error) {
+          console.error('Error checking logged-in status:', error);
+        }
+      };
+  
+      checkLoggedInStatus();
+    }, []);
+  
+    useEffect(() => {
+      const fetchUserProfile = async () => {
+        if (loggedIn && userId) {
+          try {
+            const response = await axios.post('http://localhost:8000/userProfile', { userId });
+            setUsername(response.data.username);
+            setReputation(response.data.reputation);
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+          }
+        }
+      };
+  
+      fetchUserProfile();
+    }, [loggedIn, userId]);
+
   const checkLoggedInStatus = async () => {
     try {
       const response = await axios.get("http://localhost:8000/getLoggedIn");
@@ -52,14 +89,12 @@ export default function QCommentsList(props) {
   const handleCommentSubmit = async (event) => {
     event.preventDefault();
 
-    if (validateCommentForm(newComment)) {
+    if (validateCommentForm(newComment, reputation)) {
 
     try {
       // Send POST request to add new comment
 
-      console.log(qid);
-
-      await axios.post(`http://localhost:8000/question/${qid}/comments`, { content: newComment }, {
+      await axios.post(`http://localhost:8000/question/${qid}/comments`, { content: newComment, username:username }, {
         headers: {
             'Content-Type': 'application/json'
         }
@@ -106,7 +141,6 @@ export default function QCommentsList(props) {
             <span className="cVotes">{comment.votes}</span>
             <span>{comment.content}</span>
             <span className="comment-metadata">
-              {/* TODO: add username */}
                 <span className="cUser"> - {comment.username}</span>
                 <span className="cTime"> commented {formatTime(comment.createdAt)}</span>
             </span>
@@ -161,11 +195,16 @@ function formatTime(date) {
   return `${month} ${day}, ${year} at ${hour}:${minute}`;
 }
 
-// TODO: add reputation constraint
-function validateCommentForm(content) {
+function validateCommentForm(content, reputation) {
   if (content.length > 140) {
     alert("Comment content should be 140 characters or less.");
     return false;
 }
+
+if (reputation < 50) {
+  alert("User reputation should be at least 50.");
+  return false;
+}
+
   return true;
 }

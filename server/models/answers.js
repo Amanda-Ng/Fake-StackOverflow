@@ -1,7 +1,6 @@
 // Answer Document Schema
 const mongoose = require('mongoose')
 const Comment = require('./comments.js')
-const User = require('./users.js');
 
 const Schema = mongoose.Schema
 
@@ -25,7 +24,7 @@ const answerSchema = new Schema({
   },
   comments: {
     type: [Comment.schema]
-  }, 
+  },
   votes: {
     type: Number,
     default: 0

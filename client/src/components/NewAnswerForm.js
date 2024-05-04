@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../stylesheets/App.css';
 
@@ -6,9 +6,43 @@ export default function NewAnswerForm(props) {
   const qid = props.qid;
 
   const [formData, setFormData] = useState({
-    answerUsername: '',
     answerText: ''
   });
+
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+      const checkLoggedInStatus = async () => {
+        try {
+          const response = await axios.get('http://localhost:8000/getLoggedIn');
+          if (response.data.loggedIn) {
+            setLoggedIn(true);
+            setUserId(response.data.userId);
+          }
+        } catch (error) {
+          console.error('Error checking logged-in status:', error);
+        }
+      };
+  
+      checkLoggedInStatus();
+    }, []);
+  
+    useEffect(() => {
+      const fetchUserProfile = async () => {
+        if (loggedIn && userId) {
+          try {
+            const response = await axios.post('http://localhost:8000/userProfile', { userId });
+            setUsername(response.data.username);
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+          }
+        }
+      };
+  
+      fetchUserProfile();
+    }, [loggedIn, userId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,17 +58,18 @@ export default function NewAnswerForm(props) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { answerUsername, answerText } = formData;
+    const { answerText } = formData;
 
-    if (validateAnswerForm(answerUsername, answerText)) {
+    if (validateAnswerForm(answerText)) {
 
     try {
         decrementViewsCount();
         
         // Send a POST request to add the new answer
         const response = await axios.post(`http://localhost:8000/questions/${qid}/answers`, {
-          username: answerUsername,
+          username: username,
           text: answerText,
+          userId: userId
         }, {
             headers: {
                 'Content-Type': 'application/json'
@@ -45,7 +80,6 @@ export default function NewAnswerForm(props) {
         if (response.status === 201) {
           // Reset the form data
           setFormData({
-            answerUsername: '',
             answerText: ''
           });
           
@@ -62,15 +96,6 @@ export default function NewAnswerForm(props) {
       <br /><br /><br />
       <form className="post-ans" onSubmit={handleSubmit}>
         <br /><br /><br />
-        <label htmlFor="aUsername" id="form-header">Username*</label><br />
-        <input
-          type="text"
-          id="aUsername"
-          name="answerUsername"
-          value={formData.answerUsername}
-          onChange={handleChange}
-          required
-        /><br /><br />
         <label htmlFor="aText" id="form-header">Answer Text*</label><br />
         <textarea
           id="aText"
@@ -86,9 +111,9 @@ export default function NewAnswerForm(props) {
   );
 }
 
-function validateAnswerForm(username, text) {
+function validateAnswerForm(text) {
   // true if any of the regex groups match and executes if block
-  if (username.trim() === '' || text.trim() === '') {
+  if (text.trim() === '') {
     alert("Please fill in all required fields.");
     return false;
   }
