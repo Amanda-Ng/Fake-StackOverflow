@@ -24,8 +24,8 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 let tags = [];
 let answers = [];
-function tagCreate(name) {
-  let tag = new Tag({ name: name });
+function tagCreate(name, userId) {
+  let tag = new Tag({ name: name, userId:userId });
   return tag.save();
 }
 
@@ -58,8 +58,8 @@ function questionCreate(title, text, summary, tags, answers, asked_by, userId, a
   return qstn.save();
 }
 
-function commentCreate(content, votes, userId, createdAt) {
-    const commentDetail = {content:content, votes:votes, userId:userId};
+function commentCreate(content, votes, username, createdAt) {
+    const commentDetail = {content:content, votes:votes, username:username};
     if (createdAt != false) commentDetail.createdAt = createdAt;  
     let comment = new Comment(commentDetail);
     return comment.save();
@@ -89,20 +89,20 @@ const populate = async () => {
   // u4 is associated with [a5]
   let u4 = await userCreate("UserFound", "x.goth32153@gmail.com", "theskyisnotblue");
 
-  let c1 = await commentCreate('This is a acomment', 5, u1._id, false);
-  let c2 = await commentCreate('This is a acomment2', 5, u4._id, false);
-  let c3 = await commentCreate('This is a acomment3', 5, u2._id, false);
-  let c4 = await commentCreate('This is a acomment4', 5, u1._id, false);
-  let c5 = await commentCreate('This is a qcomment', 5, u2._id, false);
-  let c6 = await commentCreate('This is a qcomment2', 5, u4._id, false);
-  let c7 = await commentCreate('This is a qcomment3', 5, u4._id, false);
-  let c8 = await commentCreate('This is a qcomment4', 5, u2._id, false);
-  let t1 = await tagCreate('react');
-  let t2 = await tagCreate('javascript');
-  let t3 = await tagCreate('android-studio');
-  let t4 = await tagCreate('shared-preferences');
-  let t5 = await tagCreate('python');
-  let t6 = await tagCreate('pandas');
+  let c1 = await commentCreate('This is a acomment', 5, u1.username, false);
+  let c2 = await commentCreate('This is a acomment2', 5, u4.username, false);
+  let c3 = await commentCreate('This is a acomment3', 5, u2.username, false);
+  let c4 = await commentCreate('This is a acomment4', 5, u1.username, false);
+  let c5 = await commentCreate('This is a qcomment', 5, u2.username, false);
+  let c6 = await commentCreate('This is a qcomment2', 5, u4.username, false);
+  let c7 = await commentCreate('This is a qcomment3', 5, u4.username, false);
+  let c8 = await commentCreate('This is a qcomment4', 5, u2.username, false);
+  let t1 = await tagCreate('react', u1._id);
+  let t2 = await tagCreate('javascript', u2._id);
+  let t3 = await tagCreate('android-studio', u3._id);
+  let t4 = await tagCreate('shared-preferences', u4._id);
+  let t5 = await tagCreate('python', u1._id);
+  let t6 = await tagCreate('pandas', u2._id);
   let a1 = await answerCreate('React Router is mostly a wrapper around the history library. history handles interaction with the browser\'s window.history for you with its browser and hash histories. It also provides a memory history which is useful for environments that don\'t have a global history. This is particularly useful in mobile app development (react-native) and unit testing with Node.', u1._id, 'Ricky', false, false, 1);
   let a2 = await answerCreate('On my end, I like to have a single history object that I can carry even outside components. I like to have a single history.js file that I import on demand, and just manipulate it. You just have to change BrowserRouter to Router, and specify the history prop. This doesn\'t change anything for you, except that you have your own history object that you can manipulate as you want. You need to install history, the library used by react-router.', u3._id, 'warpingbagel', false, [c1, c2, c3, c4], 2);
   let a3 = await answerCreate('Consider using apply() instead; commit writes its data to persistent storage immediately, whereas apply will handle it in the background.', u2._id, 'SpringFlowers', false, false, 3);
