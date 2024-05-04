@@ -1,6 +1,7 @@
 import '../stylesheets/NavBar.css';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import Notification from './Notification.js';
 
 export default function NavBar(props) {
   const changeActive = props.changeActive;
@@ -12,6 +13,12 @@ export default function NavBar(props) {
     }
   };
   
+  // pop-up notification with relevant message is shown using state
+  const [showNotif, setShowNotif] = useState(false);
+  const closeNotif = () => {
+    setShowNotif(false);
+  }
+
   const [ isLoggedIn, setIsLoggedIn ] = useState(false);
   // check if the user is logged in every time the activePage changes
   useEffect(() => {
@@ -29,13 +36,14 @@ export default function NavBar(props) {
     try {
       await axios.get("http://localhost:8000/logout");
       setIsLoggedIn(false);
+      setShowNotif(true);
     }
     catch(error) {
       console.error("Error logging out:", error);
     }
   };
-  
   return (
+    <>
     <div id="header" className="header">
       <button id="header-title" className="header-title" onClick={() => {changeActive("Welcome")}}>
         fake<b>StackOverflow</b>
@@ -57,5 +65,9 @@ export default function NavBar(props) {
       )}
       </div>
     </div>
+    {showNotif && 
+      <Notification message="You have been logged out" onClose={closeNotif}/>
+    }
+    </>
   );
 }
