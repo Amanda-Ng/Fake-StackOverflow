@@ -15,7 +15,7 @@ const tagSchema = new Schema({
   },
   tagCount: {
     type: Number,
-    default: 0
+    default: 1
   }
 })
 tagSchema.virtual('url').get(function () {
