@@ -3,6 +3,7 @@ import '../stylesheets/UserProfile.css';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
+import Notification from './Notification';
 
 export default function UserProfile(props) {
   const changeActive = props.changeActive;
@@ -10,6 +11,12 @@ export default function UserProfile(props) {
   const [miniMenuPage, setMiniMenuPage] = useState("Q");
   const [modalType, setModalType] = useState("");
   const [modalTag, setModalTag] = useState(null);
+
+  // for showing notifications about incorrect 
+  const [notif, setNotif] = useState("");
+  const closeNotif = () => {
+    setNotif("");
+  }
 
   // change what is shown based on mini menu
   const handleMenuClick = (page) => {
@@ -94,6 +101,9 @@ export default function UserProfile(props) {
         setModalType(mType);
         setModalTag(tag);
       }
+      else {
+        setNotif(`Cannot edit/delete "${tag.name}" tag. It is currently in use by other users.`);
+      }
     }
     catch(error) {
       console.error('Error editing tag:', error);
@@ -101,6 +111,7 @@ export default function UserProfile(props) {
   }
 
   return (
+    <>
     <div id="user-profile">
       {profileData && (
         <>
@@ -184,6 +195,8 @@ export default function UserProfile(props) {
       )}
       {modalType && <Modal modalType={modalType} modalTag={modalTag} fillProfileData={fillProfileData} onClose={closeModal}/>}
     </div>
+    {notif && <Notification message={notif} onClose={closeNotif} />}
+    </>
   );
 }
 
