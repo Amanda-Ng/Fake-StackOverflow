@@ -584,6 +584,8 @@ router.get('/logout', userController.logoutUser);
 router.post('/userProfile', userController.getUserProfileData);
 router.post('/deleteQuestion', userController.deleteQuestion);
 router.post('/deleteAnswer', userController.deleteAnswer);
+router.post('/verifyEditableTag', userController.verifyEditableTag);
+router.post('/editTag', userController.editTag);
 
 router.post('/username', userController.getUsername);
 router.post('/updateReputation', userController.updateReputation);

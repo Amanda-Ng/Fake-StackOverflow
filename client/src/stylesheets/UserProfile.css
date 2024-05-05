@@ -69,18 +69,37 @@
   border: 1px solid rgb(176, 176, 176);
   border-radius: 5px;
 }
-.delete-button {
+
+.delete-button, .edit-button {
   padding: 5px 10px;
   height: 30px;
-  background-color: rgb(48,144,226);
   color: white;
-  border: 1px solid rgb(48,144,226);
   border-radius: 8px;
 }
-.delete-button:hover {
-  background-color: rgb(33, 95, 149);
+.delete-button {
+  background-color: rgb(220, 22, 22);
+  border: 1px solid rgb(220, 22, 22);
+}
+.edit-button {
+  background-color: rgb(48,144,226);
+  border: 1px solid rgb(48,144,226);
+  margin-right: 5px;
+}
+.delete-button:hover, .edit-button:hover {
   transition: background-color, 0.15s, ease-in-out;
   cursor: pointer;
+}
+.delete-button:hover {
+  background-color: rgb(188, 6, 6);
+}
+.edit-button:hover {
+  background-color: rgb(33, 95, 149);
+}
+.edit-button:disabled {
+  background-color: rgb(227, 227, 227);
+  color: rgb(110, 110, 110);
+  border-color: rgb(110, 110, 110);
+  cursor: default;
 }
 #profile-tags-container {
   display: grid;
@@ -98,12 +117,12 @@
   color: rgb(67, 126, 228);
   text-decoration: underline;
   font-weight: bold;
-  cursor: pointer;
+  /* cursor: pointer; */
 }
 .profile-tag-box-link, .profile-tag-box-count {
   margin-top: 5px;
 }
-.profile-tag-box:hover {
+/* .profile-tag-box:hover {
   background-color: rgb(241, 241, 241);
   transition: background-color, 0.5s;
-}
+} */

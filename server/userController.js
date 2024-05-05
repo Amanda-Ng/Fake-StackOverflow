@@ -5,6 +5,7 @@ const Question = require('./models/questions.js')
 const Answer = require('./models/answers.js')
 const Tag = require('./models/tags.js')
 const Comment = require('./models/comments.js')
+const questions = require('./models/questions.js')
 
 const userController = {}
 
@@ -199,6 +200,42 @@ userController.deleteAnswer = async (req, res) => {
   }
   catch(error) {
     console.error("Error deleting answer:", error);
+  }
+}
+
+userController.verifyEditableTag = async (req, res) => {
+  try {
+    const { userId, tagId, tagCount } = req.body;
+    // if only 1 question is using this tag, then it's the user's question
+    if(tagCount == 1) {
+      return res.status(200).json({ editable: true }); 
+    }
+    // check the users who posted questions with this tag
+    const questionsWithTag = await Question.find({ 'tags._id': tagId });
+    for(const question of questionsWithTag) {
+      if(question.userId.toString() !== userId) {
+        return res.status(200).json({ editable: false }); 
+      }
+    }
+    return res.status(200).json({ editable: true }); 
+  }
+  catch(error) {
+    console.error("Error verifying if the tag could be edited:", error);
+  }
+}
+
+userController.editTag = async (req, res) => {
+  try {
+    const { tagId, newTagName } = req.body;
+    // update the questions' tag array for any tags that match the tagId
+    // tags.$.name updates the nested tag's name directly
+    await Question.updateMany({ 'tags._id': tagId }, { $set: { 'tags.$.name': newTagName } });
+    // update the tag's name
+    await Tag.updateOne({ _id: tagId }, { $set: { name: newTagName } });
+    return res.status(200).json({ success: true }); 
+  }
+  catch(error) {
+    console.error("Error editing the tag:", error);
   }
 }
 

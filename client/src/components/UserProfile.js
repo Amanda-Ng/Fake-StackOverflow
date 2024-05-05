@@ -2,11 +2,23 @@ import '../stylesheets/App.css';
 import '../stylesheets/UserProfile.css';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import Modal from './Modal';
 
 export default function UserProfile(props) {
   const changeActive = props.changeActive;
   const [profileData, setProfileData] = useState(null);
   const [miniMenuPage, setMiniMenuPage] = useState("Q");
+  const [modalType, setModalType] = useState("");
+
+  // change what is shown based on mini menu
+  const handleMenuClick = (page) => {
+    setMiniMenuPage(page);
+  }
+  useMiniMenuHighlight(miniMenuPage);
+
+  const closeModal = () => {
+    setModalType("");
+  }
 
   // put all the data retrieved into profileData
   const fillProfileData = async () => {
@@ -65,34 +77,27 @@ export default function UserProfile(props) {
     // // to refresh the data shown after an answer is deleted
     fillProfileData();
   }
-
-  // change what is shown based on mini menu
-  const handleMenuClick = (page) => {
-    setMiniMenuPage(page);
+  // added an edit button and its handler for tags
+  const handleEditTag = async (tag) => {
+    try {
+      const response = await axios.post("http://localhost:8000/verifyEditableTag", { 
+        userId: profileData.userId,
+        tagId: tag._id,
+        tagCount: tag.tagCount
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if(response.data.editable) {
+        // pass the tag to indicate modal should show elements for editing tag
+        setModalType(tag);
+      }
+    }
+    catch(error) {
+      console.error('Error editing tag:', error);
+    }
   }
-
-  // change what mini menu link is highlighted based on current page
-  useEffect(() => {
-    // mini-q is highlighted initially in UserProfile.css
-    const miniQ = document.getElementById("mini-q");
-    const miniA = document.getElementById("mini-a");
-    const miniT = document.getElementById("mini-t");
-    // check miniQ, miniA, and miniA are not null
-    if(miniQ && miniA && miniT) {
-      miniQ.style.backgroundColor = "white";
-      miniA.style.backgroundColor = "white";
-      miniT.style.backgroundColor = "white";
-    }
-    if(miniMenuPage === "Q" && miniQ) {
-      miniQ.style.backgroundColor = "rgb(219, 219, 219)";
-    }
-    else if(miniMenuPage === "A" && miniA) {
-      miniA.style.backgroundColor = "rgb(219, 219, 219)";
-    }
-    else if(miniT) {
-      miniT.style.backgroundColor = "rgb(219, 219, 219)";
-    }
-  }, [miniMenuPage]);
 
   return (
     <div id="user-profile">
@@ -159,6 +164,9 @@ export default function UserProfile(props) {
                   <div key={tag._id} className="profile-tag-box" >
                     <p className="profile-tag-box-link">{tag.name}</p>
                     <p className="profile-tag-box-count">{tag.tagCount} questions</p>
+                    <button className="edit-button" onClick={() => {handleEditTag(tag)}} >
+                      Edit
+                    </button>
                     <button className="delete-button" >Delete</button>
                   </div>
                 ))}
@@ -171,6 +179,7 @@ export default function UserProfile(props) {
         </div>
         </>
       )}
+      {modalType && <Modal modalType={modalType} fillProfileData={fillProfileData} onClose={closeModal}/>}
     </div>
   );
 }
@@ -212,4 +221,28 @@ function formatTime(date) {
     return `${years} year${years > 1 ? 's' : ''}`;
   }
   return `${years} year${years > 1 ? 's' : ''}, ${months} month${months > 1 ? 's' : ''}`;
+}
+function useMiniMenuHighlight(miniMenuPage) {
+    // change what mini menu link is highlighted based on current page
+  useEffect(() => {
+    // mini-q is highlighted initially in UserProfile.css
+    const miniQ = document.getElementById("mini-q");
+    const miniA = document.getElementById("mini-a");
+    const miniT = document.getElementById("mini-t");
+    // check miniQ, miniA, and miniA are not null
+    if(miniQ && miniA && miniT) {
+      miniQ.style.backgroundColor = "white";
+      miniA.style.backgroundColor = "white";
+      miniT.style.backgroundColor = "white";
+    }
+    if(miniMenuPage === "Q" && miniQ) {
+      miniQ.style.backgroundColor = "rgb(219, 219, 219)";
+    }
+    else if(miniMenuPage === "A" && miniA) {
+      miniA.style.backgroundColor = "rgb(219, 219, 219)";
+    }
+    else if(miniT) {
+      miniT.style.backgroundColor = "rgb(219, 219, 219)";
+    }
+  }, [miniMenuPage]);
 }

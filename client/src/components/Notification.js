@@ -1,5 +1,5 @@
-import '../stylesheets/Notification.css';
-import { useState, useEffect } from 'react';
+import '../stylesheets/PopUps.css';
+import { useState } from 'react';
 
 export default function Notification(props) {
   const message = props.message;
