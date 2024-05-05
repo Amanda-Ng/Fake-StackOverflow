@@ -80,11 +80,11 @@ async function userCreate(username, email, password, isAdmin) {
 }
 
 const populate = async () => {
-  // u1 is associated with [q2,q4], [a1], [t3, t4]
+  // u1 is associated with [q2,q4], [a1], [t3, t4], [c1, c4]
   let u1 = await userCreate("Ricky","ricky.ii@gmail.com","gr@3fsQ!6");
-  // u2 is associated with [q1,q6], [a3], [t1, t2]
+  // u2 is associated with [q1,q6], [a3], [t1, t2], [c3, c5, c8]
   let u2 = await userCreate("SpringFlowers","daisy.pinkler.3@stonybrook.edu","ahiiy#@$sdf92");
-  // u3 is associated with [q3, q5], [a2, a4], [t5, t6]
+  // u3 is associated with [q3, q5], [a2, a4], [t5, t6], [c2, c6, c7]
   let u3 = await userCreate("warpingbagel", "hit.by.a.bagel@yahoo.com", "password?");
   // u4 is associated with [a5]
   let u4 = await userCreate("UserFound", "x.goth32153@gmail.com", "theskyisnotblue");
@@ -97,12 +97,12 @@ const populate = async () => {
   let c6 = await commentCreate('This is a qcomment2', 5, u4.username, false);
   let c7 = await commentCreate('This is a qcomment3', 5, u4.username, false);
   let c8 = await commentCreate('This is a qcomment4', 5, u2.username, false);
-  let t1 = await tagCreate('react', u1._id, 1);
+  let t1 = await tagCreate('react', u2._id, 1);
   let t2 = await tagCreate('javascript', u2._id, 3);
-  let t3 = await tagCreate('android-studio', u3._id, 1);
-  let t4 = await tagCreate('shared-preferences', u4._id, 1);
-  let t5 = await tagCreate('python', u1._id, 3);
-  let t6 = await tagCreate('pandas', u2._id, 2);
+  let t3 = await tagCreate('android-studio', u1._id, 1);
+  let t4 = await tagCreate('shared-preferences', u1._id, 1);
+  let t5 = await tagCreate('python', u3._id, 3);
+  let t6 = await tagCreate('pandas', u3._id, 2);
   let a1 = await answerCreate('React Router is mostly a wrapper around the history library. history handles interaction with the browser\'s window.history for you with its browser and hash histories. It also provides a memory history which is useful for environments that don\'t have a global history. This is particularly useful in mobile app development (react-native) and unit testing with Node.', u1._id, 'Ricky', false, false, 1);
   let a2 = await answerCreate('On my end, I like to have a single history object that I can carry even outside components. I like to have a single history.js file that I import on demand, and just manipulate it. You just have to change BrowserRouter to Router, and specify the history prop. This doesn\'t change anything for you, except that you have your own history object that you can manipulate as you want. You need to install history, the library used by react-router.', u3._id, 'warpingbagel', false, [c1, c2, c3, c4], 2);
   let a3 = await answerCreate('Consider using apply() instead; commit writes its data to persistent storage immediately, whereas apply will handle it in the background.', u2._id, 'SpringFlowers', false, false, 3);
