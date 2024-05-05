@@ -84,9 +84,9 @@ const populate = async () => {
   let u1 = await userCreate("Ricky","ricky.ii@gmail.com","gr@3fsQ!6");
   // u2 is associated with [q1,q6], [a3], [t1, t2], [c3, c5, c8]
   let u2 = await userCreate("SpringFlowers","daisy.pinkler.3@stonybrook.edu","ahiiy#@$sdf92");
-  // u3 is associated with [q3, q5], [a2, a4], [t5, t6], [c2, c6, c7]
+  // u3 is associated with [q3, q5], [a2, a4], [t5, t6]
   let u3 = await userCreate("warpingbagel", "hit.by.a.bagel@yahoo.com", "password?");
-  // u4 is associated with [a5]
+  // u4 is associated with [a5], [c2, c6, c7]
   let u4 = await userCreate("UserFound", "x.goth32153@gmail.com", "theskyisnotblue");
 
   let c1 = await commentCreate('This is a acomment', 5, u1.username, false);
