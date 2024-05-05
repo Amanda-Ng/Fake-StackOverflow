@@ -78,7 +78,32 @@
   border-radius: 8px;
 }
 .delete-button:hover {
-  background-color: rgb(38, 113, 178);
+  background-color: rgb(33, 95, 149);
   transition: background-color, 0.15s, ease-in-out;
   cursor: pointer;
+}
+#profile-tags-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  row-gap: 40px;
+}
+.profile-tag-box {
+  border: 1px dashed black;
+  border-radius: 5px;
+  text-align: center;
+  padding: 5px 10px;
+  width: 13em;
+}
+.profile-tag-box-link {
+  color: rgb(67, 126, 228);
+  text-decoration: underline;
+  font-weight: bold;
+  cursor: pointer;
+}
+.profile-tag-box-link, .profile-tag-box-count {
+  margin-top: 5px;
+}
+.profile-tag-box:hover {
+  background-color: rgb(241, 241, 241);
+  transition: background-color, 0.5s;
 }

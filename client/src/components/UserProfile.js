@@ -1,3 +1,4 @@
+import '../stylesheets/App.css';
 import '../stylesheets/UserProfile.css';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
@@ -153,14 +154,15 @@ export default function UserProfile(props) {
           <div>
             <h2>Created Tags</h2>
             {profileData.tags.length > 0 ? (
-              <ul className="mini-list">
+              <div id="profile-tags-container">
                 {profileData.tags.map(tag => (
-                  <div className="mini-item" key={tag._id} >
-                    <li>{tag.name}</li>
+                  <div key={tag._id} className="profile-tag-box" >
+                    <p className="profile-tag-box-link">{tag.name}</p>
+                    <p className="profile-tag-box-count">{tag.tagCount} questions</p>
                     <button className="delete-button" >Delete</button>
                   </div>
                 ))}
-              </ul>
+              </div>
             ) : (
               <p className="empty-mini-list">You have not created any tags yet.</p>
             )}
