@@ -239,6 +239,21 @@ userController.editTag = async (req, res) => {
   }
 }
 
+// TODO: verify that a question without a tag will not cause errors
+userController.deleteTag = async (req, res) => {
+  try {
+    const { tagId } = req.body;
+    // update Question documents to remove any occurrence of this tag
+    await Question.updateMany({ 'tags._id': tagId }, { $pull: { tags: { _id: tagId } } });
+    // delete the tag
+    await Tag.deleteOne({ _id: tagId });
+    return res.status(200).json({ success: true }); 
+  }
+  catch(error) {
+    console.error("Error deleting the tag:", error);
+  }
+}
+
 userController.getUsername = async (req, res) => {
   const { userId } = req.body
   // find all userData using userId

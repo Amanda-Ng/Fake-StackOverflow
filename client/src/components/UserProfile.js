@@ -9,6 +9,7 @@ export default function UserProfile(props) {
   const [profileData, setProfileData] = useState(null);
   const [miniMenuPage, setMiniMenuPage] = useState("Q");
   const [modalType, setModalType] = useState("");
+  const [modalTag, setModalTag] = useState(null);
 
   // change what is shown based on mini menu
   const handleMenuClick = (page) => {
@@ -77,8 +78,8 @@ export default function UserProfile(props) {
     // // to refresh the data shown after an answer is deleted
     fillProfileData();
   }
-  // added an edit button and its handler for tags
-  const handleEditTag = async (tag) => {
+  // added edit and delete buttons for tags and their handler
+  const handleTagButtons = async (tag, mType) => {
     try {
       const response = await axios.post("http://localhost:8000/verifyEditableTag", { 
         userId: profileData.userId,
@@ -90,8 +91,8 @@ export default function UserProfile(props) {
         }
       });
       if(response.data.editable) {
-        // pass the tag to indicate modal should show elements for editing tag
-        setModalType(tag);
+        setModalType(mType);
+        setModalTag(tag);
       }
     }
     catch(error) {
@@ -164,10 +165,12 @@ export default function UserProfile(props) {
                   <div key={tag._id} className="profile-tag-box" >
                     <p className="profile-tag-box-link">{tag.name}</p>
                     <p className="profile-tag-box-count">{tag.tagCount} questions</p>
-                    <button className="edit-button" onClick={() => {handleEditTag(tag)}} >
+                    <button className="edit-button" onClick={() => {handleTagButtons(tag, "edit-tag")}} >
                       Edit
                     </button>
-                    <button className="delete-button" >Delete</button>
+                    <button className="delete-button" onClick={() => {handleTagButtons(tag, "delete-tag")}} >
+                      Delete
+                    </button>
                   </div>
                 ))}
               </div>
@@ -179,7 +182,7 @@ export default function UserProfile(props) {
         </div>
         </>
       )}
-      {modalType && <Modal modalType={modalType} fillProfileData={fillProfileData} onClose={closeModal}/>}
+      {modalType && <Modal modalType={modalType} modalTag={modalTag} fillProfileData={fillProfileData} onClose={closeModal}/>}
     </div>
   );
 }
