@@ -9,6 +9,7 @@ export default function QuestionsPageHeader(props) {
   const rawQList = props.rawQList;
   const qList = props.qList;
   const setQList = props.setQList;
+  const currentList = props.currentList;
   sortNewest(rawQList); // by default, sort by newest
 
   const checkLoggedInStatus = async () => {
@@ -27,7 +28,24 @@ export default function QuestionsPageHeader(props) {
 
   let shownListLen = qList.length;
   let title = ""; // changes if search is used
-  
+
+  // functions that the filter buttons use
+  const clickNewest = () => {
+    sortNewest(currentList);
+    setQList(currentList);
+    changeActive("QuestionsFiltered");
+  };
+  const clickActive = () => {
+    const activeList = sortActive(currentList);
+    setQList(activeList);
+    changeActive("QuestionsFiltered");
+  };
+  const clickUnanswered = () => {
+    const unansweredList = showUnanswered(currentList);
+    setQList(unansweredList);
+    changeActive("QuestionsFiltered");
+  }
+
   // executes if searching
   if(activePage === "Search") {
     title = <h2 id="search-title">Search Results</h2>;
@@ -37,22 +55,6 @@ export default function QuestionsPageHeader(props) {
     title = <h2 id="question-title">All Questions</h2>;
   }
 
-  // functions that the filter buttons use
-  const clickNewest = () => {
-    sortNewest(rawQList);
-    setQList(rawQList);
-    changeActive("QuestionsFiltered");
-  };
-  const clickActive = () => {
-    const activeList = sortActive(rawQList);
-    setQList(activeList);
-    changeActive("QuestionsFiltered");
-  };
-  const clickUnanswered = () => {
-    const unansweredList = showUnanswered(rawQList);
-    setQList(unansweredList);
-    changeActive("QuestionsFiltered");
-  }
   return (
     <div className="page-header">
       {title}

@@ -244,12 +244,13 @@ router.post('/answer/:aid/comments', async (req, res) => {
   try {
     // Extract the answer id from the request parameters
     const { aid } = req.params
-    const { content, username } = req.body
+    const { content, username, userId } = req.body
 
     // Create a new Comment instance with the provided content
     const newComment = new Comment({
       content,
-      username
+      username,
+      userId
     })
 
     // Save the new comment to the database
@@ -274,12 +275,13 @@ router.post('/question/:qid/comments', async (req, res) => {
   try {
     // Extract the question id from the request parameters
     const { qid } = req.params
-    const { content, username } = req.body
+    const { content, username, userId } = req.body
 
     // Create a new Comment instance with the provided content
     const newComment = new Comment({
       content,
-      username
+      username,
+      userId
     })
 
     // Save the new comment to the database
