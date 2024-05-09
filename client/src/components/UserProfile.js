@@ -7,6 +7,7 @@ import Notification from './Notification';
 
 export default function UserProfile(props) {
   const changeActive = props.changeActive;
+  const handleSearch = props.handleSearch;
   const [profileData, setProfileData] = useState(null);
   const [miniMenuPage, setMiniMenuPage] = useState("Q");
   const [modalType, setModalType] = useState("");
@@ -174,7 +175,7 @@ export default function UserProfile(props) {
               <div id="profile-tags-container">
                 {profileData.tags.map(tag => (
                   <div key={tag._id} className="profile-tag-box" >
-                    <p className="profile-tag-box-link">{tag.name}</p>
+                    <p className="profile-tag-box-link" onClick={() => {handleSearch(`[${tag.name}]`); changeActive("Search"); }}>{tag.name}</p>
                     <p className="profile-tag-box-count">{tag.tagCount} questions</p>
                     <button className="edit-button" onClick={() => {handleTagButtons(tag, "edit-tag")}} >
                       Edit
