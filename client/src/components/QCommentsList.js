@@ -94,7 +94,7 @@ export default function QCommentsList(props) {
     try {
       // Send POST request to add new comment
 
-      await axios.post(`http://localhost:8000/question/${qid}/comments`, { content: newComment, username:username }, {
+      await axios.post(`http://localhost:8000/question/${qid}/comments`, { content: newComment, username:username, userId: userId }, {
         headers: {
             'Content-Type': 'application/json'
         }

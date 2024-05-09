@@ -94,7 +94,7 @@ export default function ACommentsList(props) {
 
     try {
       // Send POST request to add new comment
-      await axios.post(`http://localhost:8000/answer/${aid}/comments`, { content: newComment, username: username }, {
+      await axios.post(`http://localhost:8000/answer/${aid}/comments`, { content: newComment, username: username, userId: userId }, {
         headers: {
             'Content-Type': 'application/json'
         }

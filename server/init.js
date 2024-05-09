@@ -67,8 +67,8 @@ function questionCreate(title, text, summary, tags, answers, asked_by, userId, a
   return qstn.save();
 }
 
-function commentCreate(content, votes, username, createdAt) {
-    const commentDetail = {content:content, votes:votes, username:username};
+function commentCreate(content, votes, username, createdAt, userId) {
+    const commentDetail = {content:content, votes:votes, username:username, userId:userId};
     if (createdAt != false) commentDetail.createdAt = createdAt;  
     let comment = new Comment(commentDetail);
     return comment.save();
@@ -99,14 +99,14 @@ const populate = async () => {
   // u4 is associated with [a5], [c2, c6, c7]
   let u4 = await userCreate("UserFound", "x.goth32153@gmail.com", "theskyisnotblue");
 
-  let c1 = await commentCreate('This is a acomment', 5, u1.username, false);
-  let c2 = await commentCreate('This is a acomment2', 5, u4.username, false);
-  let c3 = await commentCreate('This is a acomment3', 5, u2.username, false);
-  let c4 = await commentCreate('This is a acomment4', 5, u1.username, false);
-  let c5 = await commentCreate('This is a qcomment', 5, u2.username, false);
-  let c6 = await commentCreate('This is a qcomment2', 5, u4.username, false);
-  let c7 = await commentCreate('This is a qcomment3', 5, u4.username, false);
-  let c8 = await commentCreate('This is a qcomment4', 5, u2.username, false);
+  let c1 = await commentCreate('This is a acomment', 5, u1.username, false, u1._id);
+  let c2 = await commentCreate('This is a acomment2', 5, u4.username, false, u4._id);
+  let c3 = await commentCreate('This is a acomment3', 5, u2.username, false, u2._id);
+  let c4 = await commentCreate('This is a acomment4', 5, u1.username, false, u1._id);
+  let c5 = await commentCreate('This is a qcomment', 5, u2.username, false, u2._id);
+  let c6 = await commentCreate('This is a qcomment2', 5, u4.username, false, u4._id);
+  let c7 = await commentCreate('This is a qcomment3', 5, u4.username, false, u4._id);
+  let c8 = await commentCreate('This is a qcomment4', 5, u2.username, false, u2._id);
   let t1 = await tagCreate('react', u2._id, 1);
   let t2 = await tagCreate('javascript', u2._id, 3);
   let t3 = await tagCreate('android-studio', u1._id, 1);
