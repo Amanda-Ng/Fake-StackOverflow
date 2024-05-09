@@ -5,7 +5,6 @@ const Question = require('./models/questions.js')
 const Answer = require('./models/answers.js')
 const Tag = require('./models/tags.js')
 const Comment = require('./models/comments.js')
-const questions = require('./models/questions.js')
 
 const userController = {}
 
@@ -56,8 +55,6 @@ userController.registerUser = async (req, res) => {
   // save the new user to the database
   await user.save()
   return res.status(201).json({ message: 'Successful registration' })
-  // TODO: remove message and replace with the below
-  // return res.status(201).json({ success: true });
 }
 
 userController.loginUser = async (req, res) => {
@@ -76,8 +73,16 @@ userController.loginUser = async (req, res) => {
       return res.status(200).json({ message: 'Wrong password' })
     }
     req.session.userId = userData._id
-    req.session.save()
-    return res.status(200).json({ success: true })
+    // const userId = userData._id;
+    // req.session.user = { userId, loggedIn: true };
+    try {
+      await req.session.save();
+    } catch (err) {
+        console.error('Error saving to session storage: ', err);
+    }
+    // const seshUseId = req.session.userId;
+    // await req.session.save()
+    return res.status(200).json({ success: true, sess: req.session })
   } catch (error) {
     console.error('Failed to log in:', error)
     res.status(500).json({ error: 'Internal server error' })
@@ -92,6 +97,13 @@ userController.logoutUser = async (req, res) => {
   // Date(0) returns a date from 1970 so the cookie is expired
   res.cookie('token', '', { expires: new Date(0) })
   return res.json({ success: true })
+}
+// TODO: remove this
+userController.testing = async (req, res) => {
+  const session = req.sessionID;
+  const sessionUser = req.session.user;
+  // MongoStore.get(req.sessionID)
+  return res.status(200).json({ success: true, session, sessionUser })
 }
 
 userController.getLoggedIn = async (req, res) => {
@@ -126,10 +138,21 @@ userController.getUserProfileData = async (req, res) => {
       reputation: userData.reputation,
       questions: askedQuestions,
       answeredQuestions: answeredQuestions,
-      tags: createdTags
+      tags: createdTags,
+      isAdmin: userData.isAdmin
     })
   } catch (error) {
     console.error('Error retrieving user profile information:', error)
+  }
+}
+userController.getUsernamesAndIds = async (req, res) => {
+  try {
+    const users = await User.find({}, '_id username isAdmin');
+    const filteredUsers = users.filter(user => !user.isAdmin);
+    const usernamesAndIds = filteredUsers.map(user => ({ id: user._id, username: user.username }));
+    return res.status(200).json({ usernamesAndIds })
+  } catch (error) {
+    console.error('Error retrieving usernames and ids: ', error)
   }
 }
 
@@ -247,6 +270,75 @@ userController.deleteTag = async (req, res) => {
     await Question.updateMany({ 'tags._id': tagId }, { $pull: { tags: { _id: tagId } } });
     // delete the tag
     await Tag.deleteOne({ _id: tagId });
+    return res.status(200).json({ success: true }); 
+  }
+  catch(error) {
+    console.error("Error deleting the tag:", error);
+  }
+}
+userController.deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.body
+    // verify that the user exists
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(200).json({ error: 'User not found' })
+    }
+
+    // clear questions collection of any mention of the user
+    const questions = await Question.find({});
+    for (const question of questions) {
+
+      // delete the question asked by the user
+      if(question.userId.toString() === userId) {
+        for (const tag of question.tags) {
+          // decrement the tagCount of tags associated with this question
+          await Tag.findByIdAndUpdate(tag._id, { $inc: { tagCount: -1 } })
+        }
+        await Question.findByIdAndDelete(question._id);
+      }
+      else {
+        // under answers of a question, delete the comments posted by the user 
+        await Question.updateMany(
+          { 'answers.comments.userId': userId },
+          { $pull: { 'answers.$[].comments': { userId } } },
+          { new: true }
+        );
+        // under a question, delete the answer posted by the user
+        await Question.findByIdAndUpdate(
+          question._id,
+          { $pull: { answers: { userId } } },
+          { new: true }
+        );
+        // under a question, delete the comments posted by the user 
+        await Question.findByIdAndUpdate(
+          question._id,
+          { $pull: { comments: { userId } } },
+          { new: true }
+        );
+      }  
+    }
+    // clear answers and comments collections of any mentions of the user
+    const answers = await Answer.find()
+    for(const answer of answers) {
+      // convert ObjectId to String
+      if(answer.userId.toString() === userId ) {
+        // delete the answer
+        await Answer.findByIdAndDelete(answer._id);
+      }
+      // under answers collection, delete comments by the user
+      await Answer.findByIdAndUpdate(
+        answer._id,
+        { $pull: { comments: { username: user.username } } },
+        { new: true }
+      );
+    }
+    // update tags that the user has created
+    // await Tag.updateMany(
+    //   { userId: userId },
+    //   { $set: { userId: mongoose.Types.ObjectId() } }
+    // );
+    await User.findByIdAndDelete(userId);
     return res.status(200).json({ success: true }); 
   }
   catch(error) {

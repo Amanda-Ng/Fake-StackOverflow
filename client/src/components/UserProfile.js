@@ -1,17 +1,20 @@
 import '../stylesheets/App.css';
 import '../stylesheets/UserProfile.css';
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Modal from './Modal';
 import Notification from './Notification';
 
 export default function UserProfile(props) {
+  axios.defaults.withCredentials = true;
   const changeActive = props.changeActive;
   const handleSearch = props.handleSearch;
   const [profileData, setProfileData] = useState(null);
+  const [allUsers, setAllUsers] = useState(null);
   const [miniMenuPage, setMiniMenuPage] = useState("Q");
   const [modalType, setModalType] = useState("");
   const [modalTag, setModalTag] = useState(null);
+  const [modalUser, setModalUser] = useState([null, ""]);
 
   // for showing notifications about incorrect 
   const [notif, setNotif] = useState("");
@@ -30,8 +33,8 @@ export default function UserProfile(props) {
   }
 
   // put all the data retrieved into profileData
-  const fillProfileData = async () => {
-    retrieveProfileData()
+  const fillProfileData = async (newUserId) => {
+    retrieveProfileData(newUserId)
     .then(data => {
       setProfileData({
         userId: data[0],
@@ -40,17 +43,38 @@ export default function UserProfile(props) {
         reputation: data[3],
         questions: data[4],
         answeredQuestions: data[5],
-        tags: data[6]
+        tags: data[6],
+        isAdmin: data[7]
       });
     })
     .catch(error => {
       console.error('Error retrieving profile data:', error);
     });
   }
+  // useCallback solves eslint issue with the useEffect and getAllUsers
+  const getAllUsers = useCallback(async () => {
+    try {
+        if (profileData && profileData.isAdmin) {
+            const response = await axios.get("http://localhost:8000/allUsers");
+            setAllUsers(response.data.usernamesAndIds);
+        } else {
+            console.log("User is not an admin. Cannot fetch all users.");
+        }
+    } catch (error) {
+        console.error('Error fetching all users:', error);
+    }
+  }, [profileData]);
   // runs only once using useEffect and an empty dependency array
   useEffect(() => {
     fillProfileData();
   }, []);
+  // useEffect to fetch all users when profileData is updated
+  useEffect(() => {
+    if (profileData && profileData.isAdmin) {
+        getAllUsers();
+    }
+  }, [profileData, getAllUsers]);
+  
 
   // delete a question and refresh the data
   const deleteQuestion = async (questionId) => {
@@ -98,7 +122,7 @@ export default function UserProfile(props) {
           'Content-Type': 'application/json'
         }
       });
-      if(response.data.editable) {
+      if(response.data.editable || profileData.isAdmin) {
         setModalType(mType);
         setModalTag(tag);
       }
@@ -110,10 +134,30 @@ export default function UserProfile(props) {
       console.error('Error editing tag:', error);
     }
   }
+  const handleDeleteUser = async (userId, username) => {
+    try {
+      setModalUser([userId,username]);
+      setModalType("delete-user");
+    }
+    catch(error) {
+      console.error('Error deleting user:', error);
+    }
+  }
+  // const testingFunction = async () => {
+  //   try {
+  //     const res = await axios.get("http://localhost:8000/testing", {withCredentials: true});
+  //     console.log(res.data);
+  //   }
+  //   catch(error) {
+  //     console.log(`ERROR: ${error}`);
+  //   }
+  // }
 
   return (
     <>
     <div id="user-profile">
+      {/* TODO: remove this when done testing */}
+    {/* <button onClick={testingFunction}>TESTING BUTTON1</button> */}
       {profileData && (
         <>
         <h1 className="username">{profileData.username}</h1>
@@ -132,6 +176,11 @@ export default function UserProfile(props) {
               <li id="mini-t"><button className="mini-link" onClick={() => {handleMenuClick("T")}} >
                 Tags
                 </button></li>
+                {profileData.isAdmin && (
+                  <li id="mini-u"><button className="mini-link" onClick={() => {handleMenuClick("U")}} >
+                  Users
+                  </button></li>
+                )}
             </ul>
           </div>
         {profileData.questions && miniMenuPage === "Q" && (
@@ -191,28 +240,62 @@ export default function UserProfile(props) {
             )}
           </div>
         )}
+        {allUsers && miniMenuPage === "U" && (
+          <div>
+            <h2>All Users</h2>
+            {allUsers.length > 0 ? (
+              <ul className="mini-list">
+                {allUsers.map(user => (
+                  <div key={user._id} className="mini-item" >
+                    <li onClick={() => { fillProfileData(user.id); setMiniMenuPage("Q"); }}>{user.username}</li>
+                    <button className="delete-button" onClick={() => {handleDeleteUser(user.id, user.username)}} >Delete</button>
+                  </div>
+                ))}
+              </ul>
+            ) : (
+              <p className="empty-mini-list">There are no other users yet.</p>
+            )}
+          </div>
+        )}
         </div>
         </>
       )}
-      {modalType && <Modal modalType={modalType} modalTag={modalTag} fillProfileData={fillProfileData} onClose={closeModal}/>}
+      {modalType && <Modal modalType={modalType} modalTag={modalTag} modalUser={modalUser} fillProfileData={fillProfileData} onClose={closeModal}/>}
     </div>
     {notif && <Notification message={notif} onClose={closeNotif} />}
     </>
   );
 }
 
-async function retrieveProfileData() {
+async function getCurrentUser() {
   try {
-    const response1 = await axios.get("http://localhost:8000/getLoggedIn");
-    const userId = response1.data.userId;
+    const response = await axios.get("http://localhost:8000/getLoggedIn");
+    const userId = response.data.userId;
+    return userId;
+  }
+  catch(error) {
+    console.error('Error getting user profile:', error);
+  }
+}
+
+async function retrieveProfileData(newUserId) {
+  try {
+    let userId;
+    if(!newUserId) {
+      userId = await getCurrentUser();
+    }
+    else {
+      userId = newUserId;
+    }
+    
     const response2 = await axios.post("http://localhost:8000/userProfile", { userId }, {
       headers: {
         'Content-Type': 'application/json'
       }
     });
-    const { username, date, reputation, questions, answeredQuestions, tags } = response2.data;
+    const { username, date, reputation, questions, answeredQuestions, tags, isAdmin } = response2.data;
     const formattedDate = formatTime(date);
-    return [userId, username, formattedDate, reputation, questions, answeredQuestions, tags];
+    return [userId, username, formattedDate, reputation, questions, answeredQuestions, tags, isAdmin];
   }
   catch(error) {
     console.error('Error getting user profile:', error);
@@ -246,11 +329,16 @@ function useMiniMenuHighlight(miniMenuPage) {
     const miniQ = document.getElementById("mini-q");
     const miniA = document.getElementById("mini-a");
     const miniT = document.getElementById("mini-t");
+    const miniU = document.getElementById("mini-u");
     // check miniQ, miniA, and miniA are not null
     if(miniQ && miniA && miniT) {
       miniQ.style.backgroundColor = "white";
       miniA.style.backgroundColor = "white";
       miniT.style.backgroundColor = "white";
+    }
+    // miniU must be set separately because it can be null if user is not an admin
+    if(miniU) {
+      miniU.style.backgroundColor = "white";
     }
     if(miniMenuPage === "Q" && miniQ) {
       miniQ.style.backgroundColor = "rgb(219, 219, 219)";
@@ -258,8 +346,11 @@ function useMiniMenuHighlight(miniMenuPage) {
     else if(miniMenuPage === "A" && miniA) {
       miniA.style.backgroundColor = "rgb(219, 219, 219)";
     }
-    else if(miniT) {
+    else if(miniMenuPage === "T" && miniT) {
       miniT.style.backgroundColor = "rgb(219, 219, 219)";
+    }
+    else if(miniMenuPage === "U" && miniU) {
+      miniU.style.backgroundColor = "rgb(219, 219, 219)";
     }
   }, [miniMenuPage]);
 }

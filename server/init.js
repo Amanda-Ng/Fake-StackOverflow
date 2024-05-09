@@ -1,12 +1,21 @@
 // Run this script to test your schema
 // Start the mongoDB service as a background process before running the script
-// Pass URL of your mongoDB instance as first argument(e.g., mongodb://127.0.0.1:27017/fake_so)
-let userArgs = process.argv.slice(2);
+// Pass admin user's email as the first argument
+// Pass the admin user's password as the second argument
+// let userArgs = process.argv.slice(2);
+let adminEmail = process.argv[2];
+let adminPassword = process.argv[3];
 
-if (!userArgs[0].startsWith('mongodb')) {
-    console.log('ERROR: You need to specify a valid mongodb URL as the first argument');
-    return
+const emailPattern = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/
+if (!adminEmail || !emailPattern.test(adminEmail)) {
+  console.log('ERROR: You need to specify a valid email as the first argument');
+  return
 }
+if (!adminPassword) {
+  console.log('ERROR: You need to specify a password as the second argument');
+  return
+}
+const adminUsername = adminEmail.slice(0, adminEmail.indexOf('@'))
 
 let Tag = require('./models/tags')
 let Answer = require('./models/answers')
@@ -16,7 +25,7 @@ let User = require('./models/users')
 
 const bcrypt = require('bcrypt');
 let mongoose = require('mongoose');
-let mongoDB = userArgs[0];
+let mongoDB = 'mongodb://127.0.0.1/fake_so';
 mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true});
 // mongoose.Promise = global.Promise;
 let db = mongoose.connection;
@@ -80,6 +89,7 @@ async function userCreate(username, email, password, isAdmin) {
 }
 
 const populate = async () => {
+  await userCreate(adminUsername, adminEmail, adminPassword, true);
   // u1 is associated with [q2,q4], [a1], [t3, t4], [c1, c4]
   let u1 = await userCreate("Ricky","ricky.ii@gmail.com","gr@3fsQ!6");
   // u2 is associated with [q1,q6], [a3], [t1, t2], [c3, c5, c8]

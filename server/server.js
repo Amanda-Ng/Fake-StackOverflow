@@ -24,7 +24,10 @@ const Comment = require('./models/comments.js')
 const userController = require('./userController.js')
 
 // resolves HTTP request from port 3000 being blocked by CORS policy
-app.use(cors())
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true // allow credentials
+}));
 
 // Parse JSON bodies
 app.use(bodyParser.json())
@@ -44,7 +47,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: true,
-    sameSite: 'none',
+    sameSite: 'lax',
     maxAge: hour
   },
   store: MongoStore.create({ mongoUrl: 'mongodb://127.0.0.1/fake_so' })
@@ -580,13 +583,17 @@ router.post('/register', userController.registerUser);
 router.post('/loginUser', userController.loginUser);
 router.get('/getLoggedIn', userController.getLoggedIn);
 router.get('/logout', userController.logoutUser);
+router.get('/testing', userController.testing); // TODO: remove this
 
 router.post('/userProfile', userController.getUserProfileData);
+router.get('/allUsers', userController.getUsernamesAndIds);
+
 router.post('/deleteQuestion', userController.deleteQuestion);
 router.post('/deleteAnswer', userController.deleteAnswer);
 router.post('/verifyEditableTag', userController.verifyEditableTag);
 router.post('/editTag', userController.editTag);
 router.post('/deleteTag', userController.deleteTag);
+router.post('/deleteUser', userController.deleteUser);
 
 router.post('/username', userController.getUsername);
 router.post('/updateReputation', userController.updateReputation);
