@@ -329,15 +329,10 @@ userController.deleteUser = async (req, res) => {
       // under answers collection, delete comments by the user
       await Answer.findByIdAndUpdate(
         answer._id,
-        { $pull: { comments: { username: user.username } } },
+        { $pull: { comments: { userId} } },
         { new: true }
       );
     }
-    // update tags that the user has created
-    // await Tag.updateMany(
-    //   { userId: userId },
-    //   { $set: { userId: mongoose.Types.ObjectId() } }
-    // );
     await User.findByIdAndDelete(userId);
     return res.status(200).json({ success: true }); 
   }
