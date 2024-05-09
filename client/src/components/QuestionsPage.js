@@ -13,6 +13,8 @@ export default function QuestionsPage(props) {
   // qList contains the filtered version of rawQList
   // will be written to by child component QuestionsPageHeader and read by QuestionsPageList
   const [qList, setQList] = useState([]);
+  // currentList is the current set of questions that will be displayed: rawQList or search results
+  const [currentList, setcurrentList] = useState([]);
   // loaded states check if GET request was fulfilled
   // used to prevent passing undefined rawQList to children components
   const [qLoaded, setQLoaded] = useState("");
@@ -31,6 +33,7 @@ export default function QuestionsPage(props) {
   // needed for the initial value of qList
   if(qLoaded === "loaded") {
     setQList(rawQList);
+    setcurrentList(rawQList);
     setQLoaded("initialized");
   }
    
@@ -40,17 +43,19 @@ export default function QuestionsPage(props) {
     // will not override qList outputted by the filter buttons
     if(activePage === "Questions") {
       setQList(rawQList);
+      setcurrentList(rawQList);
     }
     // only executes search if there is a change in string being searched
     // wrap in useEffect to prevent infinite re-rendering
     if(activePage === "Search") {
       setQList(search(searchString, rawQList));
+      setcurrentList(search(searchString, rawQList));
     }
   },[activePage, rawQList, searchString]);
 
   return (
     <>
-      {qLoaded && <QuestionsPageHeader rawQList={rawQList} activePage={activePage} qList={qList} setQList={setQList} changeActive={changeActive} />}
+      {qLoaded && <QuestionsPageHeader rawQList={rawQList} activePage={activePage} qList={qList} setQList={setQList} currentList={currentList} changeActive={changeActive} />}
       {qLoaded && <QuestionsPageList qList={qList} changeActive={changeActive} />}
     </>
   );
