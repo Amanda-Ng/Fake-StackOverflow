@@ -6,6 +6,7 @@ import Modal from './Modal';
 import Notification from './Notification';
 
 export default function UserProfile(props) {
+  axios.defaults.withCredentials = true;
   const changeActive = props.changeActive;
   const [profileData, setProfileData] = useState(null);
   const [miniMenuPage, setMiniMenuPage] = useState("Q");
@@ -109,10 +110,21 @@ export default function UserProfile(props) {
       console.error('Error editing tag:', error);
     }
   }
+  const testingFunction = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/testing", {withCredentials: true});
+      console.log(res.data);
+    }
+    catch(error) {
+      console.log(`ERROR: ${error}`);
+    }
+  }
 
   return (
     <>
     <div id="user-profile">
+      {/* TODO: remove this when done testing */}
+    <button onClick={testingFunction}>TESTING BUTTON1</button>
       {profileData && (
         <>
         <h1 className="username">{profileData.username}</h1>

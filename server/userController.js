@@ -5,7 +5,6 @@ const Question = require('./models/questions.js')
 const Answer = require('./models/answers.js')
 const Tag = require('./models/tags.js')
 const Comment = require('./models/comments.js')
-const questions = require('./models/questions.js')
 
 const userController = {}
 
@@ -56,8 +55,6 @@ userController.registerUser = async (req, res) => {
   // save the new user to the database
   await user.save()
   return res.status(201).json({ message: 'Successful registration' })
-  // TODO: remove message and replace with the below
-  // return res.status(201).json({ success: true });
 }
 
 userController.loginUser = async (req, res) => {
@@ -76,8 +73,16 @@ userController.loginUser = async (req, res) => {
       return res.status(200).json({ message: 'Wrong password' })
     }
     req.session.userId = userData._id
-    req.session.save()
-    return res.status(200).json({ success: true })
+    // const userId = userData._id;
+    // req.session.user = { userId, loggedIn: true };
+    try {
+      await req.session.save();
+    } catch (err) {
+        console.error('Error saving to session storage: ', err);
+    }
+    // const seshUseId = req.session.userId;
+    // await req.session.save()
+    return res.status(200).json({ success: true, sess: req.session })
   } catch (error) {
     console.error('Failed to log in:', error)
     res.status(500).json({ error: 'Internal server error' })
@@ -92,6 +97,13 @@ userController.logoutUser = async (req, res) => {
   // Date(0) returns a date from 1970 so the cookie is expired
   res.cookie('token', '', { expires: new Date(0) })
   return res.json({ success: true })
+}
+// TODO: remove this
+userController.testing = async (req, res) => {
+  const session = req.sessionID;
+  const sessionUser = req.session.user;
+  // MongoStore.get(req.sessionID)
+  return res.status(200).json({ success: true, session, sessionUser })
 }
 
 userController.getLoggedIn = async (req, res) => {
