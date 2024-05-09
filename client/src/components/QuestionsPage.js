@@ -47,37 +47,11 @@ export default function QuestionsPage(props) {
       setQList(search(searchString, rawQList));
     }
   },[activePage, rawQList, searchString]);
-  // console.log(qList);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const answersPerPage = 5;
-  // Pagination
-  const indexOfLastAnswer = currentPage * answersPerPage;
-  const indexOfFirstAnswer = indexOfLastAnswer - answersPerPage;
-  const currentQList = qList.slice(indexOfFirstAnswer, indexOfLastAnswer);
-  
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
 
   return (
     <>
       {qLoaded && <QuestionsPageHeader rawQList={rawQList} activePage={activePage} qList={qList} setQList={setQList} changeActive={changeActive} />}
-      {qLoaded && <QuestionsPageList qList={currentQList} changeActive={changeActive} />}
-      <div className="ans-pagination">
-        <button
-          onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
-          disabled={currentPage === 1}
-        >
-          Prev
-        </button>
-        <button
-          onClick={() => paginate(
-            currentPage === Math.ceil(qList.length / answersPerPage) ? 1 : currentPage + 1)}
-        >
-          Next
-        </button>
-      </div>    
+      {qLoaded && <QuestionsPageList qList={qList} changeActive={changeActive} />}
     </>
   );
 }
