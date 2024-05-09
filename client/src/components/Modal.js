@@ -8,9 +8,12 @@ export default function Modal(props) {
   const modalType = props.modalType;
   const modalTag = props.modalTag;
   const onClose = props.onClose;
-  // if modalTag is not null, (i.e. when editing or deleting a tag) tagName will be initialized
+  // if modalTag is not null (i.e. when editing or deleting a tag), tagName will be initialized
   const [tagName, setTagName] = useState(modalTag ? modalTag.name : "");
   const [deleteInput, setDeleteInput] = useState("");
+  // if userId is not null (i.e. when deleting a user), get username
+  const userId = props.modalUser[0];
+  const username = props.modalUser[1];
 
   // for showing notifications about incorrect inputs
   const [notif, setNotif] = useState("");
@@ -72,7 +75,26 @@ export default function Modal(props) {
     props.fillProfileData();
     onClose();
   }
-  const handleDeleteTagChange = (event) => {
+  const handleDeleteUserSubmit = async (event) => {
+    event.preventDefault();
+    if(deleteInput !== "delete") {
+      setNotif("Incorrect input");
+      return;
+    }
+    try {
+      const res = await axios.post('http://localhost:8000/deleteUser', { userId }, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+    }
+    // to refresh the data shown after a user is deleted
+    props.fillProfileData();
+    onClose();
+  }
+  const handleDeleteChange = (event) => {
     setDeleteInput(event.target.value.toLowerCase());
   };
   return (
@@ -96,7 +118,18 @@ export default function Modal(props) {
           <p>Are you sure you want to delete your "{tagName}" tag?</p>
           <p>If yes, type <b>delete</b></p>
           <form onSubmit={handleDeleteTagSubmit}>
-            <input type="text" onChange={handleDeleteTagChange} />
+            <input type="text" onChange={handleDeleteChange} />
+            <button type="submit">Save</button>
+          </form>
+          </>
+        }
+        {modalType === "delete-user" &&
+          <>
+          <h3>Delete user</h3>
+          <p>Are you sure you want to delete "{username}"?</p>
+          <p>If yes, type <b>delete</b></p>
+          <form onSubmit={handleDeleteUserSubmit}>
+            <input type="text" onChange={handleDeleteChange} />
             <button type="submit">Save</button>
           </form>
           </>
