@@ -1,5 +1,5 @@
 import '../stylesheets/PopUps.css';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import Notification from './Notification';
 
@@ -11,19 +11,22 @@ export default function Modal(props) {
   const modalQuestion = props.modalQuestion;
   const userId = props.modalUser[0];
   const username = props.modalUser[1];
+  const userReputation = props.modalUser[2];
   const onClose = props.onClose;
   // if modalTag is not null (i.e. when editing or deleting a tag), tagName will be initialized
   const [tagName, setTagName] = useState(modalTag ? modalTag.name : "");
   
-  const [answerText, setAnswerText] = useState("");
-  const [questionInput, setQuestionInput] = useState(modalQuestion ? [modalQuestion.title,modalQuestion.text,modalQuestion.summary,modalQuestion.tags] : ["","","",""]);
-  const [deleteInput, setDeleteInput] = useState("");
   let allQuestionTags = "";
   if(modalType === "edit-question") {
     for(const tag of modalQuestion.tags) {
       allQuestionTags += `${tag.name} `;
     }
   }
+
+  const [answerText, setAnswerText] = useState("");
+  const [questionInput, setQuestionInput] = useState(modalQuestion ? [modalQuestion.title,modalQuestion.text,modalQuestion.summary,allQuestionTags] : ["","","",""]);
+  const [deleteInput, setDeleteInput] = useState("");
+  
   // for showing notifications about incorrect inputs
   const [notif, setNotif] = useState("");
   const closeNotif = () => {
@@ -32,15 +35,34 @@ export default function Modal(props) {
 
   const handleEditQuestionSubmit = async (event) => {
     event.preventDefault();
+    const editedTags = questionInput[3].trim().split(" ");
+    const tagsPattern = /[^\w\s-]|((?:\S+\s+){5,}\S+$)|\S{21,}/;
+    for(const tag of editedTags) {
+      if(tagsPattern.test(tag)) {
+        setNotif("One or more tags are invalid");
+        return;
+      }
+    }
     try {
+      const response1 = await axios.get('http://localhost:8000/tags');
+      const allTagNames = response1.data.map(tag => tag.name);
+      if(userReputation < 50) {
+        if(!editedTags.every(tag => allTagNames.includes(tag))) {
+          setNotif("Reputation is not high enough to create a new tag.");
+          return;
+        }
+      }
       const res = await axios.post('http://localhost:8000/editQuestion', {
         questionId: modalQuestion._id,
-        newQuestionInput: questionInput
+        newQuestionInput: questionInput,
+        editedTags,
+        userId
       }, {
           headers: {
               'Content-Type': 'application/json'
           }
       });
+      console.log(res.data);
     } catch (error) {
         console.error('Error editing question:', error);
     }
@@ -137,7 +159,7 @@ export default function Modal(props) {
       return;
     }
     try {
-      const res = await axios.post('http://localhost:8000/deleteUser', { userId }, {
+      await axios.post('http://localhost:8000/deleteUser', { userId }, {
         headers: {
             'Content-Type': 'application/json'
         }

@@ -228,18 +228,49 @@ userController.deleteAnswer = async (req, res) => {
 
 userController.editQuestion = async (req, res) => {
   try {
-    const { questionId, newQuestionInput } = req.body;
-    // tags: newQuestionInput[3], 
+    const { questionId, newQuestionInput, editedTags, userId } = req.body;
+    const question = await Question.findById(questionId);
+    for (const tagName of question.tags) {
+      await Tag.findOneAndUpdate(
+        { name: tagName },
+        { $inc: { tagCount: -1 } },
+        { new: true }
+      );
+    }
+    question.tags = [];
+
+    const allTags = await Tag.find({});
+    const allTagNames = allTags.map(tag => tag.name);
+    const existingTags = [];
+    const newTags = [];
+    let foundTag;
+    for (const tag of editedTags) {
+      if (allTagNames.includes(tag)) {
+        foundTag = allTags.find(t => t.name === tag);
+        existingTags.push(foundTag);
+      } else {
+        newTags.push(tag);
+      }
+    }
+    const createdTags = [];
+    for(const tag of newTags) {
+      createdTags.push(new Tag({ name: tag, userId }))
+    }
+    await Tag.insertMany(createdTags);
+
+    const allTagsToAdd = [...existingTags, ...newTags];
+
     await Question.findOneAndUpdate(
       { _id: questionId  }, 
       { $set: { 
         title: newQuestionInput[0],
         text: newQuestionInput[1],  
         summary: newQuestionInput[2], 
+        tags: allTagsToAdd
       } }, 
       { new: true }
     );
-    return res.status(200).json({ success: true }); 
+    return res.status(200).json({ success: true, newTags, existingTags }); 
   }
   catch(error) {
     console.error("Error editing the question:", error);
