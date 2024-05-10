@@ -16,7 +16,7 @@ export default function UserProfile(props) {
 
   const [modalType, setModalType] = useState("");
   const [modalTag, setModalTag] = useState(null);
-  const [modalUser, setModalUser] = useState([null, ""]);
+  const [modalUser, setModalUser] = useState([null, "", 0]);
   const [modalAnswer, setModalAnswer] = useState(["",""]);
   const [modalQuestion, setModalQuestion] = useState(null);
 
@@ -98,6 +98,7 @@ export default function UserProfile(props) {
   const editQuestion = async (question) => {
     try {
       setModalQuestion(question);
+      setModalUser([profileData.userId,profileData.username, profileData.reputation])
       setModalType("edit-question");
     }
     catch(error) {
@@ -168,7 +169,8 @@ export default function UserProfile(props) {
   }
   const handleDeleteUser = async (userId, username) => {
     try {
-      setModalUser([userId,username]);
+      // reputation is not important for deleteUser
+      setModalUser([userId,username, 0]);
       setModalType("delete-user");
     }
     catch(error) {
