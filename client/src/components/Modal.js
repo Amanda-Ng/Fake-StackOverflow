@@ -10,6 +10,7 @@ export default function Modal(props) {
   const onClose = props.onClose;
   // if modalTag is not null (i.e. when editing or deleting a tag), tagName will be initialized
   const [tagName, setTagName] = useState(modalTag ? modalTag.name : "");
+  // const [answerText, setAnswerText] = useState()
   const [deleteInput, setDeleteInput] = useState("");
   // if userId is not null (i.e. when deleting a user), get username
   const userId = props.modalUser[0];
@@ -108,6 +109,16 @@ export default function Modal(props) {
           <p>Enter a new tag name below.</p>
           <form onSubmit={handleEditTagSubmit}>
             <input type="text" value={tagName} onChange={handleEditTagChange} />
+            <button type="submit">Save</button>
+          </form>
+          </>
+        }
+        {modalType === "edit-answer" && 
+          <>
+          <h3>Edit answer</h3>
+          
+          <form onSubmit={handleEditAnswerSubmit}>
+            <input type="text" value={tagName} onChange={handleEditAnswerChange} />
             <button type="submit">Save</button>
           </form>
           </>

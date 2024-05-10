@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useState, useEffect, useCallback } from 'react';
 import Modal from './Modal';
 import Notification from './Notification';
+import Question from './Question';
 
 export default function UserProfile(props) {
   axios.defaults.withCredentials = true;
@@ -12,9 +13,11 @@ export default function UserProfile(props) {
   const [profileData, setProfileData] = useState(null);
   const [allUsers, setAllUsers] = useState(null);
   const [miniMenuPage, setMiniMenuPage] = useState("Q");
+
   const [modalType, setModalType] = useState("");
   const [modalTag, setModalTag] = useState(null);
   const [modalUser, setModalUser] = useState([null, ""]);
+  const [modalAnswer, setModalAnswer] = useState([null, ""]);
 
   // for showing notifications about incorrect 
   const [notif, setNotif] = useState("");
@@ -110,6 +113,17 @@ export default function UserProfile(props) {
     // // to refresh the data shown after an answer is deleted
     fillProfileData();
   }
+
+  const handleEditAnswer = async (answeredQId) => {
+    try {
+      setModalAnswer([profileData.userId,answeredQId]);
+      setModalType("edit-answer");
+    }
+    catch(error) {
+      console.error('Error deleting user:', error);
+    }
+  }
+
   // added edit and delete buttons for tags and their handler
   const handleTagButtons = async (tag, mType) => {
     try {
@@ -143,6 +157,7 @@ export default function UserProfile(props) {
       console.error('Error deleting user:', error);
     }
   }
+  // TODO: remove this when done testing
   // const testingFunction = async () => {
   //   try {
   //     const res = await axios.get("http://localhost:8000/testing", {withCredentials: true});
@@ -207,7 +222,11 @@ export default function UserProfile(props) {
               <ul className="mini-list" >
                 {profileData.answeredQuestions.map(answeredQ => (
                   <div className="mini-item" key={answeredQ._id} >
-                    <li onClick={()=>{changeActive("NewAnswer")}} >{answeredQ.title}</li>
+                    <Question key={answeredQ._id} qData={answeredQ} changeActive={changeActive} />
+                    {/* <li onClick={()=>{changeActive("NewAnswer")}} >{answeredQ.title}</li> */}
+                    <button className="edit-button" onClick={() => {handleEditAnswer(answeredQ._id)}} >
+                      Edit
+                    </button>
                     <button className="delete-button" onClick={() => {deleteAnswer(answeredQ._id)}} >Delete</button>
                   </div>
                 ))}
@@ -260,7 +279,15 @@ export default function UserProfile(props) {
         </div>
         </>
       )}
-      {modalType && <Modal modalType={modalType} modalTag={modalTag} modalUser={modalUser} fillProfileData={fillProfileData} onClose={closeModal}/>}
+      {modalType && 
+      <Modal 
+        modalType={modalType} 
+        modalTag={modalTag} 
+        modalUser={modalUser} 
+        modalAnswer={modalAnswer}
+        fillProfileData={fillProfileData} 
+        onClose={closeModal}/>
+      }
     </div>
     {notif && <Notification message={notif} onClose={closeNotif} />}
     </>

@@ -225,6 +225,22 @@ userController.deleteAnswer = async (req, res) => {
     console.error("Error deleting answer:", error);
   }
 }
+userController.editAnswer = async (req, res) => {
+  try {
+    const { userId, answeredQ } = req.body;
+    let answerToEdit;
+    for(const answer of answeredQ.answers) {
+      if(answer.userId.toString() === userId) {
+        answerToEdit = answer;
+        break;
+      }
+    }
+    return res.status(200).json({ success: true }); 
+  }
+  catch(error) {
+    console.error("Error editing the answer:", error);
+  }
+}
 
 userController.verifyEditableTag = async (req, res) => {
   try {
