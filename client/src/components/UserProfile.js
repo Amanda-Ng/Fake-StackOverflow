@@ -17,7 +17,7 @@ export default function UserProfile(props) {
   const [modalType, setModalType] = useState("");
   const [modalTag, setModalTag] = useState(null);
   const [modalUser, setModalUser] = useState([null, ""]);
-  const [modalAnswer, setModalAnswer] = useState([null, ""]);
+  const [modalAnswer, setModalAnswer] = useState(["",""]);
 
   // for showing notifications about incorrect 
   const [notif, setNotif] = useState("");
@@ -114,9 +114,17 @@ export default function UserProfile(props) {
     fillProfileData();
   }
 
-  const handleEditAnswer = async (answeredQId) => {
+  const editAnswer = async (answeredQ) => {
     try {
-      setModalAnswer([profileData.userId,answeredQId]);
+      const response = await axios.post("http://localhost:8000/getAnswer", { 
+        userId: profileData.userId,  
+        answeredQ: answeredQ
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      setModalAnswer([response.data.answerId, response.data.answerText]);
       setModalType("edit-answer");
     }
     catch(error) {
@@ -224,7 +232,7 @@ export default function UserProfile(props) {
                   <div className="mini-item" key={answeredQ._id} >
                     <Question key={answeredQ._id} qData={answeredQ} changeActive={changeActive} />
                     {/* <li onClick={()=>{changeActive("NewAnswer")}} >{answeredQ.title}</li> */}
-                    <button className="edit-button" onClick={() => {handleEditAnswer(answeredQ._id)}} >
+                    <button className="edit-button" onClick={() => {editAnswer(answeredQ)}} >
                       Edit
                     </button>
                     <button className="delete-button" onClick={() => {deleteAnswer(answeredQ._id)}} >Delete</button>

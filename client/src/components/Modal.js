@@ -7,10 +7,12 @@ export default function Modal(props) {
   // modalType will be a string: "edit-tag" / "delete-tag" / "delete-user"
   const modalType = props.modalType;
   const modalTag = props.modalTag;
+  const modalAnswer = props.modalAnswer;
   const onClose = props.onClose;
   // if modalTag is not null (i.e. when editing or deleting a tag), tagName will be initialized
   const [tagName, setTagName] = useState(modalTag ? modalTag.name : "");
-  // const [answerText, setAnswerText] = useState()
+  
+  const [answerText, setAnswerText] = useState("");
   const [deleteInput, setDeleteInput] = useState("");
   // if userId is not null (i.e. when deleting a user), get username
   const userId = props.modalUser[0];
@@ -21,6 +23,28 @@ export default function Modal(props) {
   const closeNotif = () => {
     setNotif("");
   }
+  const handleEditAnswerSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const res = await axios.post('http://localhost:8000/editAnswer', {
+        answerId: modalAnswer[0],  
+        newAnswerText: answerText
+      }, {
+          headers: {
+              'Content-Type': 'application/json'
+          }
+      });
+      console.log(res.data);
+    } catch (error) {
+        console.error('Error editing tag:', error);
+    }
+    // to refresh the data shown after a tag is edited
+    props.fillProfileData();
+    onClose();
+  };
+  const handleEditAnswerChange = (event) => {
+    setAnswerText(event.target.value);
+  };
 
   const handleEditTagSubmit = async (event) => {
     event.preventDefault();
@@ -116,9 +140,8 @@ export default function Modal(props) {
         {modalType === "edit-answer" && 
           <>
           <h3>Edit answer</h3>
-          
           <form onSubmit={handleEditAnswerSubmit}>
-            <input type="text" value={tagName} onChange={handleEditAnswerChange} />
+            <textarea id="answerText" defaultValue={modalAnswer[1]} onChange={handleEditAnswerChange} />
             <button type="submit">Save</button>
           </form>
           </>

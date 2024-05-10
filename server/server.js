@@ -592,6 +592,7 @@ router.get('/allUsers', userController.getUsernamesAndIds);
 
 router.post('/deleteQuestion', userController.deleteQuestion);
 router.post('/deleteAnswer', userController.deleteAnswer);
+router.post('/getAnswer', userController.getAnswer);
 router.post('/editAnswer', userController.editAnswer);
 router.post('/verifyEditableTag', userController.verifyEditableTag);
 router.post('/editTag', userController.editTag);

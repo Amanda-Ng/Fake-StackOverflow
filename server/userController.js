@@ -225,7 +225,8 @@ userController.deleteAnswer = async (req, res) => {
     console.error("Error deleting answer:", error);
   }
 }
-userController.editAnswer = async (req, res) => {
+
+userController.getAnswer = async (req, res) => {
   try {
     const { userId, answeredQ } = req.body;
     let answerToEdit;
@@ -235,6 +236,25 @@ userController.editAnswer = async (req, res) => {
         break;
       }
     }
+    return res.status(200).json({ answerId: answerToEdit._id, answerText: answerToEdit.text }); 
+  }
+  catch(error) {
+    console.error("Error editing the answer:", error);
+  }
+}
+userController.editAnswer = async (req, res) => {
+  try {
+    const { answerId, newAnswerText } = req.body;
+    await Question.findOneAndUpdate(
+      { 'answers._id': answerId }, 
+      { $set: { 'answers.$.text': newAnswerText } }, 
+      { new: true }
+    );
+    await Answer.findOneAndUpdate(
+      { _id: answerId }, 
+      { $set: { text: newAnswerText } }, 
+      { new: true }
+    );
     return res.status(200).json({ success: true }); 
   }
   catch(error) {
