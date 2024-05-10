@@ -8,25 +8,57 @@ export default function Modal(props) {
   const modalType = props.modalType;
   const modalTag = props.modalTag;
   const modalAnswer = props.modalAnswer;
+  const modalQuestion = props.modalQuestion;
+  const userId = props.modalUser[0];
+  const username = props.modalUser[1];
   const onClose = props.onClose;
   // if modalTag is not null (i.e. when editing or deleting a tag), tagName will be initialized
   const [tagName, setTagName] = useState(modalTag ? modalTag.name : "");
   
   const [answerText, setAnswerText] = useState("");
+  const [questionInput, setQuestionInput] = useState(["","","",""]);
   const [deleteInput, setDeleteInput] = useState("");
-  // if userId is not null (i.e. when deleting a user), get username
-  const userId = props.modalUser[0];
-  const username = props.modalUser[1];
+  let allQuestionTags = "";
+  if(modalType === "edit-question") {
+    for(const tag of modalQuestion.tags) {
+      allQuestionTags += `${tag.name} `;
+    }
+  }
 
   // for showing notifications about incorrect inputs
   const [notif, setNotif] = useState("");
   const closeNotif = () => {
     setNotif("");
   }
+
+  const handleEditQuestionSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      // const res = await axios.post('http://localhost:8000/editQuestion', {
+      //   question,
+      //   newQuestionInput: questionInput
+      // }, {
+      //     headers: {
+      //         'Content-Type': 'application/json'
+      //     }
+      // });
+      // console.log(res.data);
+      console.log(questionInput);
+    } catch (error) {
+        console.error('Error editing question:', error);
+    }
+    // to refresh the data shown after a tag is edited
+    props.fillProfileData();
+    onClose();
+  };
+  const handleEditQuestionChange = (event) => {
+    setQuestionInput(event.target.value);
+  };
+
   const handleEditAnswerSubmit = async (event) => {
     event.preventDefault();
     try {
-      const res = await axios.post('http://localhost:8000/editAnswer', {
+      await axios.post('http://localhost:8000/editAnswer', {
         answerId: modalAnswer[0],  
         newAnswerText: answerText
       }, {
@@ -34,11 +66,10 @@ export default function Modal(props) {
               'Content-Type': 'application/json'
           }
       });
-      console.log(res.data);
     } catch (error) {
-        console.error('Error editing tag:', error);
+        console.error('Error editing answer:', error);
     }
-    // to refresh the data shown after a tag is edited
+    // to refresh the data shown after an answer is edited
     props.fillProfileData();
     onClose();
   };
@@ -126,6 +157,27 @@ export default function Modal(props) {
     <>
     <div className="modal">
       <div className="modal-content">
+      {modalType === "edit-question" && 
+          <>  
+          <h3>Edit question</h3>
+          <form onSubmit={handleEditQuestionSubmit} id="post-question-form">
+              <label htmlFor="qTitle" className="form-header">Question Title*</label><br />
+              <i className="form-instructions">Limit to 100 characters or less</i><br />
+              <input type="text" id="qTitle" name="questionTitle" maxLength="100" value={modalQuestion.title} onChange={handleEditQuestionChange} required /><br /><br />
+              <label htmlFor="qText" className="form-header" required>Question Text*</label><br />
+              <i className="form-instructions">Add details</i><br />
+              <textarea id="qText" name="questionText" value={modalQuestion.text} onChange={handleEditQuestionChange} required></textarea><br /><br />
+              <label htmlFor="qSummary" className="form-header" required>Question Summary*</label><br />
+              <i className="form-instructions">Add a summary</i><br />
+              <textarea id="qSummary" name="questionSummary" value={modalQuestion.summary} onChange={handleEditQuestionChange} required></textarea><br /><br />
+              <label htmlFor="qTags" className="form-header">Tags*</label><br />
+              <i className="form-instructions">Add keywords separated by whitespace</i><br />
+              <input type="text" id="qTags" name="questionTags" value={allQuestionTags} onChange={handleEditQuestionChange} /><br /><br />
+              <button type="submit">Save</button>
+              <p id="mandatory">* indicates mandatory fields</p>
+          </form>
+          </>
+        }
         {modalType === "edit-tag" && 
           <>
           <h3>Edit tag</h3>

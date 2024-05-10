@@ -18,6 +18,7 @@ export default function UserProfile(props) {
   const [modalTag, setModalTag] = useState(null);
   const [modalUser, setModalUser] = useState([null, ""]);
   const [modalAnswer, setModalAnswer] = useState(["",""]);
+  const [modalQuestion, setModalQuestion] = useState(null);
 
   // for showing notifications about incorrect 
   const [notif, setNotif] = useState("");
@@ -93,6 +94,15 @@ export default function UserProfile(props) {
     }
     // to refresh the data shown after a question is deleted
     fillProfileData();
+  }
+  const editQuestion = async (question) => {
+    try {
+      setModalQuestion(question);
+      setModalType("edit-question");
+    }
+    catch(error) {
+      console.error('Error editing question:', error);
+    }
   }
   
   // delete a answer and refresh the data
@@ -213,7 +223,7 @@ export default function UserProfile(props) {
               <ul className="mini-list">
                 {profileData.questions.map(question => (
                   <div className="mini-item" key={question._id} >
-                    <li onClick={()=>{changeActive("NewQuestion")}} >{question.title}</li>
+                    <li onClick={() => {editQuestion(question)}} >{question.title}</li>
                     <button className="delete-button" onClick={() => {deleteQuestion(question._id)}} >Delete</button>
                   </div>
                 ))}
@@ -231,7 +241,6 @@ export default function UserProfile(props) {
                 {profileData.answeredQuestions.map(answeredQ => (
                   <div className="mini-item" key={answeredQ._id} >
                     <Question key={answeredQ._id} qData={answeredQ} changeActive={changeActive} />
-                    {/* <li onClick={()=>{changeActive("NewAnswer")}} >{answeredQ.title}</li> */}
                     <button className="edit-button" onClick={() => {editAnswer(answeredQ)}} >
                       Edit
                     </button>
@@ -293,6 +302,7 @@ export default function UserProfile(props) {
         modalTag={modalTag} 
         modalUser={modalUser} 
         modalAnswer={modalAnswer}
+        modalQuestion={modalQuestion}
         fillProfileData={fillProfileData} 
         onClose={closeModal}/>
       }
