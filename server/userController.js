@@ -226,6 +226,26 @@ userController.deleteAnswer = async (req, res) => {
   }
 }
 
+userController.editQuestion = async (req, res) => {
+  try {
+    const { questionId, newQuestionInput } = req.body;
+    // tags: newQuestionInput[3], 
+    await Question.findOneAndUpdate(
+      { _id: questionId  }, 
+      { $set: { 
+        title: newQuestionInput[0],
+        text: newQuestionInput[1],  
+        summary: newQuestionInput[2], 
+      } }, 
+      { new: true }
+    );
+    return res.status(200).json({ success: true }); 
+  }
+  catch(error) {
+    console.error("Error editing the question:", error);
+  }
+}
+
 userController.getAnswer = async (req, res) => {
   try {
     const { userId, answeredQ } = req.body;

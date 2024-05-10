@@ -1,5 +1,5 @@
 import '../stylesheets/PopUps.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Notification from './Notification';
 
@@ -16,7 +16,7 @@ export default function Modal(props) {
   const [tagName, setTagName] = useState(modalTag ? modalTag.name : "");
   
   const [answerText, setAnswerText] = useState("");
-  const [questionInput, setQuestionInput] = useState(["","","",""]);
+  const [questionInput, setQuestionInput] = useState(modalQuestion ? [modalQuestion.title,modalQuestion.text,modalQuestion.summary,modalQuestion.tags] : ["","","",""]);
   const [deleteInput, setDeleteInput] = useState("");
   let allQuestionTags = "";
   if(modalType === "edit-question") {
@@ -24,7 +24,6 @@ export default function Modal(props) {
       allQuestionTags += `${tag.name} `;
     }
   }
-
   // for showing notifications about incorrect inputs
   const [notif, setNotif] = useState("");
   const closeNotif = () => {
@@ -34,16 +33,14 @@ export default function Modal(props) {
   const handleEditQuestionSubmit = async (event) => {
     event.preventDefault();
     try {
-      // const res = await axios.post('http://localhost:8000/editQuestion', {
-      //   question,
-      //   newQuestionInput: questionInput
-      // }, {
-      //     headers: {
-      //         'Content-Type': 'application/json'
-      //     }
-      // });
-      // console.log(res.data);
-      console.log(questionInput);
+      const res = await axios.post('http://localhost:8000/editQuestion', {
+        questionId: modalQuestion._id,
+        newQuestionInput: questionInput
+      }, {
+          headers: {
+              'Content-Type': 'application/json'
+          }
+      });
     } catch (error) {
         console.error('Error editing question:', error);
     }
@@ -51,8 +48,10 @@ export default function Modal(props) {
     props.fillProfileData();
     onClose();
   };
-  const handleEditQuestionChange = (event) => {
-    setQuestionInput(event.target.value);
+  const handleEditQuestionChange = (event, index) => {
+    const newQuestionInput = [...questionInput]; 
+    newQuestionInput[index] = event.target.value;
+    setQuestionInput(newQuestionInput);
   };
 
   const handleEditAnswerSubmit = async (event) => {
@@ -163,16 +162,16 @@ export default function Modal(props) {
           <form onSubmit={handleEditQuestionSubmit} id="post-question-form">
               <label htmlFor="qTitle" className="form-header">Question Title*</label><br />
               <i className="form-instructions">Limit to 100 characters or less</i><br />
-              <input type="text" id="qTitle" name="questionTitle" maxLength="100" value={modalQuestion.title} onChange={handleEditQuestionChange} required /><br /><br />
+              <input type="text" id="qTitle" name="questionTitle" maxLength="100" defaultValue={modalQuestion.title} onChange={(event) => {handleEditQuestionChange(event, 0)}} required /><br /><br />
               <label htmlFor="qText" className="form-header" required>Question Text*</label><br />
               <i className="form-instructions">Add details</i><br />
-              <textarea id="qText" name="questionText" value={modalQuestion.text} onChange={handleEditQuestionChange} required></textarea><br /><br />
+              <textarea id="qText" name="questionText" defaultValue={modalQuestion.text} onChange={(event) => {handleEditQuestionChange(event, 1)}} required></textarea><br /><br />
               <label htmlFor="qSummary" className="form-header" required>Question Summary*</label><br />
               <i className="form-instructions">Add a summary</i><br />
-              <textarea id="qSummary" name="questionSummary" value={modalQuestion.summary} onChange={handleEditQuestionChange} required></textarea><br /><br />
+              <textarea id="qSummary" name="questionSummary" defaultValue={modalQuestion.summary} onChange={(event) => {handleEditQuestionChange(event, 2)}} required></textarea><br /><br />
               <label htmlFor="qTags" className="form-header">Tags*</label><br />
               <i className="form-instructions">Add keywords separated by whitespace</i><br />
-              <input type="text" id="qTags" name="questionTags" value={allQuestionTags} onChange={handleEditQuestionChange} /><br /><br />
+              <input type="text" id="qTags" name="questionTags" defaultValue={allQuestionTags} onChange={(event) => {handleEditQuestionChange(event, 3)}} /><br /><br />
               <button type="submit">Save</button>
               <p id="mandatory">* indicates mandatory fields</p>
           </form>
