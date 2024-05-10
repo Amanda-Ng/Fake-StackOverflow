@@ -1,12 +1,21 @@
 // Run this script to test your schema
 // Start the mongoDB service as a background process before running the script
-// Pass URL of your mongoDB instance as first argument(e.g., mongodb://127.0.0.1:27017/fake_so)
-let userArgs = process.argv.slice(2);
+// Pass admin user's email as the first argument
+// Pass the admin user's password as the second argument
+// let userArgs = process.argv.slice(2);
+let adminEmail = process.argv[2];
+let adminPassword = process.argv[3];
 
-if (!userArgs[0].startsWith('mongodb')) {
-    console.log('ERROR: You need to specify a valid mongodb URL as the first argument');
-    return
+const emailPattern = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/
+if (!adminEmail || !emailPattern.test(adminEmail)) {
+  console.log('ERROR: You need to specify a valid email as the first argument');
+  return
 }
+if (!adminPassword) {
+  console.log('ERROR: You need to specify a password as the second argument');
+  return
+}
+const adminUsername = adminEmail.slice(0, adminEmail.indexOf('@'))
 
 let Tag = require('./models/tags')
 let Answer = require('./models/answers')
@@ -16,7 +25,7 @@ let User = require('./models/users')
 
 const bcrypt = require('bcrypt');
 let mongoose = require('mongoose');
-let mongoDB = userArgs[0];
+let mongoDB = 'mongodb://127.0.0.1/fake_so';
 mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true});
 // mongoose.Promise = global.Promise;
 let db = mongoose.connection;
@@ -58,8 +67,8 @@ function questionCreate(title, text, summary, tags, answers, asked_by, userId, a
   return qstn.save();
 }
 
-function commentCreate(content, votes, username, createdAt) {
-    const commentDetail = {content:content, votes:votes, username:username};
+function commentCreate(content, votes, username, createdAt, userId) {
+    const commentDetail = {content:content, votes:votes, username:username, userId:userId};
     if (createdAt != false) commentDetail.createdAt = createdAt;  
     let comment = new Comment(commentDetail);
     return comment.save();
@@ -80,29 +89,30 @@ async function userCreate(username, email, password, isAdmin) {
 }
 
 const populate = async () => {
-  // u1 is associated with [q2,q4], [a1], [t3, t4]
+  await userCreate(adminUsername, adminEmail, adminPassword, true);
+  // u1 is associated with [q2,q4], [a1], [t3, t4], [c1, c4]
   let u1 = await userCreate("Ricky","ricky.ii@gmail.com","gr@3fsQ!6");
-  // u2 is associated with [q1,q6], [a3], [t1, t2]
+  // u2 is associated with [q1,q6], [a3], [t1, t2], [c3, c5, c8]
   let u2 = await userCreate("SpringFlowers","daisy.pinkler.3@stonybrook.edu","ahiiy#@$sdf92");
   // u3 is associated with [q3, q5], [a2, a4], [t5, t6]
   let u3 = await userCreate("warpingbagel", "hit.by.a.bagel@yahoo.com", "password?");
-  // u4 is associated with [a5]
+  // u4 is associated with [a5], [c2, c6, c7]
   let u4 = await userCreate("UserFound", "x.goth32153@gmail.com", "theskyisnotblue");
 
-  let c1 = await commentCreate('This is a acomment', 5, u1.username, false);
-  let c2 = await commentCreate('This is a acomment2', 5, u4.username, false);
-  let c3 = await commentCreate('This is a acomment3', 5, u2.username, false);
-  let c4 = await commentCreate('This is a acomment4', 5, u1.username, false);
-  let c5 = await commentCreate('This is a qcomment', 5, u2.username, false);
-  let c6 = await commentCreate('This is a qcomment2', 5, u4.username, false);
-  let c7 = await commentCreate('This is a qcomment3', 5, u4.username, false);
-  let c8 = await commentCreate('This is a qcomment4', 5, u2.username, false);
-  let t1 = await tagCreate('react', u1._id, 1);
+  let c1 = await commentCreate('This is a acomment', 5, u1.username, false, u1._id);
+  let c2 = await commentCreate('This is a acomment2', 5, u4.username, false, u4._id);
+  let c3 = await commentCreate('This is a acomment3', 5, u2.username, false, u2._id);
+  let c4 = await commentCreate('This is a acomment4', 5, u1.username, false, u1._id);
+  let c5 = await commentCreate('This is a qcomment', 5, u2.username, false, u2._id);
+  let c6 = await commentCreate('This is a qcomment2', 5, u4.username, false, u4._id);
+  let c7 = await commentCreate('This is a qcomment3', 5, u4.username, false, u4._id);
+  let c8 = await commentCreate('This is a qcomment4', 5, u2.username, false, u2._id);
+  let t1 = await tagCreate('react', u2._id, 1);
   let t2 = await tagCreate('javascript', u2._id, 3);
-  let t3 = await tagCreate('android-studio', u3._id, 1);
-  let t4 = await tagCreate('shared-preferences', u4._id, 1);
-  let t5 = await tagCreate('python', u1._id, 3);
-  let t6 = await tagCreate('pandas', u2._id, 2);
+  let t3 = await tagCreate('android-studio', u1._id, 1);
+  let t4 = await tagCreate('shared-preferences', u1._id, 1);
+  let t5 = await tagCreate('python', u3._id, 3);
+  let t6 = await tagCreate('pandas', u3._id, 2);
   let a1 = await answerCreate('React Router is mostly a wrapper around the history library. history handles interaction with the browser\'s window.history for you with its browser and hash histories. It also provides a memory history which is useful for environments that don\'t have a global history. This is particularly useful in mobile app development (react-native) and unit testing with Node.', u1._id, 'Ricky', false, false, 1);
   let a2 = await answerCreate('On my end, I like to have a single history object that I can carry even outside components. I like to have a single history.js file that I import on demand, and just manipulate it. You just have to change BrowserRouter to Router, and specify the history prop. This doesn\'t change anything for you, except that you have your own history object that you can manipulate as you want. You need to install history, the library used by react-router.', u3._id, 'warpingbagel', false, [c1, c2, c3, c4], 2);
   let a3 = await answerCreate('Consider using apply() instead; commit writes its data to persistent storage immediately, whereas apply will handle it in the background.', u2._id, 'SpringFlowers', false, false, 3);

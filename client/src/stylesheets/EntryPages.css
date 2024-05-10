@@ -1,0 +1,69 @@
+#welcome, #registration, #login {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 82vw;
+  height: 78vh;
+}
+#welcome h1, #registration h1 {
+  margin-bottom: 70px;
+}
+#welcome button {
+  margin-bottom: 20px;
+  width: 200px;
+  padding: 10px 0;
+  font-size: 16px;
+  background-color: white;
+  color: rgb(48,144,226);
+  font-weight: bold;
+  border: 1.5px solid rgb(48,144,226);
+  border-radius: 15px;
+  cursor: pointer;
+}
+#welcome button:hover {
+  background-color: rgb(48,144,226);
+  color: white;
+  transition: background-color, 0.15s, ease-in-out;
+  cursor: pointer;
+}
+#welcome button:disabled {
+  background-color: rgb(227, 227, 227);
+  color: rgb(110, 110, 110);
+  border-color: rgb(110, 110, 110);
+  cursor: default;
+}
+#registration-form, #login-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 82vw;
+  height: 30vh;
+}
+#user, #email, #pw, #rePw {
+  margin-bottom: 20px;
+  width: 275px;
+  padding: 10px 10px;
+  font-size: 16px;
+  background-color: rgb(214, 234, 253);
+  border: 1px solid rgb(214, 234, 253);
+  border-radius: 5px;
+}
+#registration-form input::placeholder, #login-form input::placeholder {
+  color: rgb(34, 34, 34);
+}
+#register-button, #login-button {
+  margin-top: 20px;
+  padding: 10px 50px;
+  font-size: 17px;
+  background-color: rgb(48,144,226);
+  color: white;
+  border: 1px solid rgb(48,144,226);
+  border-radius: 20px;
+}
+#register-button:hover, #login-button:hover {
+  background-color: rgb(38, 113, 178);
+  transition: background-color, 0.15s, ease-in-out;
+  cursor: pointer;
+}

@@ -1,8 +1,14 @@
-import '../stylesheets/App.css';
+import '../stylesheets/EntryPages.css';
 import { useState } from 'react';
 import axios from 'axios';
+import Notification from './Notification';
 
 export default function LoginPage(props) {
+  // for showing notifications about incorrect credentials
+  const [notif, setNotif] = useState("");
+  const closeNotif = () => {
+    setNotif("");
+  }
   const [formData, setFormData] = useState({
     loginEmail: '',
     loginPassword: ''
@@ -26,53 +32,34 @@ export default function LoginPage(props) {
           'Content-Type': 'application/json'
         }
       });
-      // TODO: alerts should be replaced by actual UI notification
       if(!response.data.success) {
-        alert(response.data.message);
+        setNotif(response.data.message);
         return false;
       }
-      alert("Successful login");
-      props.changeActive("Welcome");
+      setNotif("Successful login");
+      // delay changing active page to show successful notification message
+      setTimeout(() => {
+        props.changeActive("Questions");
+      }, 1000);
     }
     catch(error) {
       console.error('Error verifying credentials:', error);
     }
   }
 
-  const testingGetLoggedIn = async () => {
-    try {
-      const response = await axios.get("http://localhost:8000/getLoggedIn");
-      if(response.data.loggedIn) {
-        console.log(response.data.userId);
-      }
-      else {
-        console.log("GUEST");
-      }
-    }
-    catch(error) {
-      console.error('Error getting logged in', error);
-    }
-  }
-  const testingLogout = async () => {
-    try {
-      const response = await axios.get("http://localhost:8000/logout");
-      console.log(response.data.success);
-    }
-    catch(error) {
-      console.error('Error logging out', error);
-    }
-  }
   return (
+    <>
     <div id="login">
+      <h1>Login</h1>
       <form onSubmit={handleSubmit} id="login-form" method="POST" >
-        <label htmlFor="email" >Email</label>
-        <input type="text" id="email" name="loginEmail" value={formData.loginEmail} onChange={handleChange} required ></input>
-        <label htmlFor="pw" >Password</label>
-        <input type="text" id="pw" name="loginPassword" value={formData.loginPassword} onChange={handleChange} required ></input>
-        <input type="submit" value="Login" />
+        <label htmlFor="email" ></label>
+        <input type="email" id="email" name="loginEmail" value={formData.loginEmail} onChange={handleChange} placeholder="Email" required ></input>
+        <label htmlFor="pw" ></label>
+        <input type="password" id="pw" name="loginPassword" value={formData.loginPassword} onChange={handleChange} placeholder="Password" required ></input>
+        <input type="submit" id="login-button" value="Login" />
       </form>
-      <button onClick={testingGetLoggedIn}>testing getLoggedIn</button>
-      <button onClick={testingLogout}>testing Logout</button>
   </div> 
+  {notif && <Notification message={notif} onClose={closeNotif} /> }
+  </>
   );
 }

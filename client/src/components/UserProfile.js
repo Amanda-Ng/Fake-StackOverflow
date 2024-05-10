@@ -1,34 +1,86 @@
+import '../stylesheets/App.css';
 import '../stylesheets/UserProfile.css';
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Modal from './Modal';
+import Notification from './Notification';
+import Question from './Question';
 
 export default function UserProfile(props) {
+  axios.defaults.withCredentials = true;
   const changeActive = props.changeActive;
+  const handleSearch = props.handleSearch;
   const [profileData, setProfileData] = useState(null);
+  const [allUsers, setAllUsers] = useState(null);
   const [miniMenuPage, setMiniMenuPage] = useState("Q");
 
+  const [modalType, setModalType] = useState("");
+  const [modalTag, setModalTag] = useState(null);
+  const [modalUser, setModalUser] = useState([null, ""]);
+  const [modalAnswer, setModalAnswer] = useState(["",""]);
+  const [modalQuestion, setModalQuestion] = useState(null);
+
+  // for showing notifications about incorrect 
+  const [notif, setNotif] = useState("");
+  const closeNotif = () => {
+    setNotif("");
+  }
+
+  // change what is shown based on mini menu
+  const handleMenuClick = (page) => {
+    setMiniMenuPage(page);
+  }
+  useMiniMenuHighlight(miniMenuPage);
+
+  const closeModal = () => {
+    setModalType("");
+  }
+
   // put all the data retrieved into profileData
-  const setupProfileData = async () => {
-    retrieveProfileData()
+  const fillProfileData = async (newUserId) => {
+    retrieveProfileData(newUserId)
     .then(data => {
       setProfileData({
-        username: data[0],
-        date: data[1],
-        reputation: data[2],
-        questions: data[3],
-        answers: data[4],
-        tags: data[5]
+        userId: data[0],
+        username: data[1],
+        date: data[2],
+        reputation: data[3],
+        questions: data[4],
+        answeredQuestions: data[5],
+        tags: data[6],
+        isAdmin: data[7]
       });
     })
     .catch(error => {
       console.error('Error retrieving profile data:', error);
     });
   }
+  // useCallback solves eslint issue with the useEffect and getAllUsers
+  const getAllUsers = useCallback(async () => {
+    try {
+        if (profileData && profileData.isAdmin) {
+            const response = await axios.get("http://localhost:8000/allUsers");
+            setAllUsers(response.data.usernamesAndIds);
+        } else {
+            console.log("User is not an admin. Cannot fetch all users.");
+        }
+    } catch (error) {
+        console.error('Error fetching all users:', error);
+    }
+  }, [profileData]);
   // runs only once using useEffect and an empty dependency array
   useEffect(() => {
-    setupProfileData();
+    fillProfileData();
   }, []);
+  // useEffect to fetch all users when profileData is updated
+  useEffect(() => {
+    if (profileData && profileData.isAdmin) {
+        getAllUsers();
+    }
+  }, [profileData, getAllUsers]);
+  
 
+  // delete a question and refresh the data
   const deleteQuestion = async (questionId) => {
     try {
       await axios.post("http://localhost:8000/deleteQuestion", { questionId }, {
@@ -41,41 +93,104 @@ export default function UserProfile(props) {
       console.error('Error deleting question:', error);
     }
     // to refresh the data shown after a question is deleted
-    setupProfileData();
+    fillProfileData();
+  }
+  const editQuestion = async (question) => {
+    try {
+      setModalQuestion(question);
+      setModalType("edit-question");
+    }
+    catch(error) {
+      console.error('Error editing question:', error);
+    }
   }
   
-  // change what is shown based on mini menu
-  const handleMenuClick = (page) => {
-    setMiniMenuPage(page);
+  // delete a answer and refresh the data
+  const deleteAnswer = async (answeredQId) => {
+    try {
+      await axios.post("http://localhost:8000/deleteAnswer", { 
+        userId: profileData.userId,  
+        answeredQId: answeredQId
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+    catch(error) {
+      console.error('Error deleting answer:', error);
+    }
+    // // to refresh the data shown after an answer is deleted
+    fillProfileData();
   }
 
-  // change what mini menu link is highlighted based on current page
-  const miniQ = document.getElementById("mini-q");
-  if(miniQ) {
-    miniQ.style.backgroundColor = "rgb(219, 219, 219)";
+  const editAnswer = async (answeredQ) => {
+    try {
+      const response = await axios.post("http://localhost:8000/getAnswer", { 
+        userId: profileData.userId,  
+        answeredQ: answeredQ
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      setModalAnswer([response.data.answerId, response.data.answerText]);
+      setModalType("edit-answer");
+    }
+    catch(error) {
+      console.error('Error deleting user:', error);
+    }
   }
-  useEffect(() => {
-    const miniA = document.getElementById("mini-a");
-    const miniT = document.getElementById("mini-t");
-    // check miniQ, miniA, and miniA are not null
-    if(miniQ && miniA && miniT) {
-      miniQ.style.backgroundColor = "white";
-      miniA.style.backgroundColor = "white";
-      miniT.style.backgroundColor = "white";
+
+  // added edit and delete buttons for tags and their handler
+  const handleTagButtons = async (tag, mType) => {
+    try {
+      const response = await axios.post("http://localhost:8000/verifyEditableTag", { 
+        userId: profileData.userId,
+        tagId: tag._id,
+        tagCount: tag.tagCount
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if(response.data.editable || profileData.isAdmin) {
+        setModalType(mType);
+        setModalTag(tag);
+      }
+      else {
+        setNotif(`Cannot edit/delete "${tag.name}" tag. It is currently in use by other users.`);
+      }
     }
-    if(miniMenuPage === "Q" && miniQ) {
-      miniQ.style.backgroundColor = "rgb(219, 219, 219)";
+    catch(error) {
+      console.error('Error editing tag:', error);
     }
-    else if(miniMenuPage === "A" && miniA) {
-      miniA.style.backgroundColor = "rgb(219, 219, 219)";
+  }
+  const handleDeleteUser = async (userId, username) => {
+    try {
+      setModalUser([userId,username]);
+      setModalType("delete-user");
     }
-    else if(miniT) {
-      miniT.style.backgroundColor = "rgb(219, 219, 219)";
+    catch(error) {
+      console.error('Error deleting user:', error);
     }
-  }, [miniMenuPage, miniQ]);
+  }
+  // TODO: remove this when done testing
+  // const testingFunction = async () => {
+  //   try {
+  //     const res = await axios.get("http://localhost:8000/testing", {withCredentials: true});
+  //     console.log(res.data);
+  //   }
+  //   catch(error) {
+  //     console.log(`ERROR: ${error}`);
+  //   }
+  // }
 
   return (
+    <>
     <div id="user-profile">
+      {/* TODO: remove this when done testing */}
+    {/* <button onClick={testingFunction}>TESTING BUTTON1</button> */}
       {profileData && (
         <>
         <h1 className="username">{profileData.username}</h1>
@@ -94,6 +209,11 @@ export default function UserProfile(props) {
               <li id="mini-t"><button className="mini-link" onClick={() => {handleMenuClick("T")}} >
                 Tags
                 </button></li>
+                {profileData.isAdmin && (
+                  <li id="mini-u"><button className="mini-link" onClick={() => {handleMenuClick("U")}} >
+                  Users
+                  </button></li>
+                )}
             </ul>
           </div>
         {profileData.questions && miniMenuPage === "Q" && (
@@ -103,7 +223,7 @@ export default function UserProfile(props) {
               <ul className="mini-list">
                 {profileData.questions.map(question => (
                   <div className="mini-item" key={question._id} >
-                    <li onClick={()=>{changeActive("NewQuestion")}} >{question.title}</li>
+                    <li onClick={() => {editQuestion(question)}} >{question.title}</li>
                     <button className="delete-button" onClick={() => {deleteQuestion(question._id)}} >Delete</button>
                   </div>
                 ))}
@@ -113,15 +233,18 @@ export default function UserProfile(props) {
             )}
           </div>
         )}
-        {profileData.answers && miniMenuPage === "A" && (
+        {profileData.answeredQuestions && miniMenuPage === "A" && (
           <div>
             <h2>Answered Questions</h2>
-            {profileData.answers.length > 0 ? (
+            {profileData.answeredQuestions.length > 0 ? (
               <ul className="mini-list" >
-                {profileData.answers.map(answer => (
-                  <div className="mini-item" key={answer._id} >
-                    <li onClick={()=>{changeActive("NewAnswer")}} >{answer.title}</li>
-                    <button className="delete-button" >Delete</button>
+                {profileData.answeredQuestions.map(answeredQ => (
+                  <div className="mini-item" key={answeredQ._id} >
+                    <Question key={answeredQ._id} qData={answeredQ} changeActive={changeActive} />
+                    <button className="edit-button" onClick={() => {editAnswer(answeredQ)}} >
+                      Edit
+                    </button>
+                    <button className="delete-button" onClick={() => {deleteAnswer(answeredQ._id)}} >Delete</button>
                   </div>
                 ))}
               </ul>
@@ -134,38 +257,90 @@ export default function UserProfile(props) {
           <div>
             <h2>Created Tags</h2>
             {profileData.tags.length > 0 ? (
-              <ul className="mini-list">
+              <div id="profile-tags-container">
                 {profileData.tags.map(tag => (
-                  <div className="mini-item" key={tag._id} >
-                    <li>{tag.name}</li>
-                    <button className="delete-button" >Delete</button>
+                  <div key={tag._id} className="profile-tag-box" >
+                    <p className="profile-tag-box-link" onClick={() => {handleSearch(`[${tag.name}]`); changeActive("Search"); }}>{tag.name}</p>
+                    <p className="profile-tag-box-count">{tag.tagCount} questions</p>
+                    <button className="edit-button" onClick={() => {handleTagButtons(tag, "edit-tag")}} >
+                      Edit
+                    </button>
+                    <button className="delete-button" onClick={() => {handleTagButtons(tag, "delete-tag")}} >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="empty-mini-list">You have not created any tags yet.</p>
+            )}
+          </div>
+        )}
+        {allUsers && miniMenuPage === "U" && (
+          <div>
+            <h2>All Users</h2>
+            {allUsers.length > 0 ? (
+              <ul className="mini-list">
+                {allUsers.map(user => (
+                  <div key={user._id} className="mini-item" >
+                    <li onClick={() => { fillProfileData(user.id); setMiniMenuPage("Q"); }}>{user.username}</li>
+                    <button className="delete-button" onClick={() => {handleDeleteUser(user.id, user.username)}} >Delete</button>
                   </div>
                 ))}
               </ul>
             ) : (
-              <p className="empty-mini-list">You have not created any tags yet.</p>
+              <p className="empty-mini-list">There are no other users yet.</p>
             )}
           </div>
         )}
         </div>
         </>
       )}
+      {modalType && 
+      <Modal 
+        modalType={modalType} 
+        modalTag={modalTag} 
+        modalUser={modalUser} 
+        modalAnswer={modalAnswer}
+        modalQuestion={modalQuestion}
+        fillProfileData={fillProfileData} 
+        onClose={closeModal}/>
+      }
     </div>
+    {notif && <Notification message={notif} onClose={closeNotif} />}
+    </>
   );
 }
 
-async function retrieveProfileData() {
+async function getCurrentUser() {
   try {
-    const response1 = await axios.get("http://localhost:8000/getLoggedIn");
-    const userId = response1.data.userId;
+    const response = await axios.get("http://localhost:8000/getLoggedIn");
+    const userId = response.data.userId;
+    return userId;
+  }
+  catch(error) {
+    console.error('Error getting user profile:', error);
+  }
+}
+
+async function retrieveProfileData(newUserId) {
+  try {
+    let userId;
+    if(!newUserId) {
+      userId = await getCurrentUser();
+    }
+    else {
+      userId = newUserId;
+    }
+    
     const response2 = await axios.post("http://localhost:8000/userProfile", { userId }, {
       headers: {
         'Content-Type': 'application/json'
       }
     });
-    const { username, date, reputation, questions, answers, tags } = response2.data;
+    const { username, date, reputation, questions, answeredQuestions, tags, isAdmin } = response2.data;
     const formattedDate = formatTime(date);
-    return [username, formattedDate, reputation, questions, answers, tags];
+    return [userId, username, formattedDate, reputation, questions, answeredQuestions, tags, isAdmin];
   }
   catch(error) {
     console.error('Error getting user profile:', error);
@@ -191,4 +366,36 @@ function formatTime(date) {
     return `${years} year${years > 1 ? 's' : ''}`;
   }
   return `${years} year${years > 1 ? 's' : ''}, ${months} month${months > 1 ? 's' : ''}`;
+}
+function useMiniMenuHighlight(miniMenuPage) {
+    // change what mini menu link is highlighted based on current page
+  useEffect(() => {
+    // mini-q is highlighted initially in UserProfile.css
+    const miniQ = document.getElementById("mini-q");
+    const miniA = document.getElementById("mini-a");
+    const miniT = document.getElementById("mini-t");
+    const miniU = document.getElementById("mini-u");
+    // check miniQ, miniA, and miniA are not null
+    if(miniQ && miniA && miniT) {
+      miniQ.style.backgroundColor = "white";
+      miniA.style.backgroundColor = "white";
+      miniT.style.backgroundColor = "white";
+    }
+    // miniU must be set separately because it can be null if user is not an admin
+    if(miniU) {
+      miniU.style.backgroundColor = "white";
+    }
+    if(miniMenuPage === "Q" && miniQ) {
+      miniQ.style.backgroundColor = "rgb(219, 219, 219)";
+    }
+    else if(miniMenuPage === "A" && miniA) {
+      miniA.style.backgroundColor = "rgb(219, 219, 219)";
+    }
+    else if(miniMenuPage === "T" && miniT) {
+      miniT.style.backgroundColor = "rgb(219, 219, 219)";
+    }
+    else if(miniMenuPage === "U" && miniU) {
+      miniU.style.backgroundColor = "rgb(219, 219, 219)";
+    }
+  }, [miniMenuPage]);
 }

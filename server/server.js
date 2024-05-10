@@ -24,7 +24,10 @@ const Comment = require('./models/comments.js')
 const userController = require('./userController.js')
 
 // resolves HTTP request from port 3000 being blocked by CORS policy
-app.use(cors())
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true // allow credentials
+}));
 
 // Parse JSON bodies
 app.use(bodyParser.json())
@@ -44,7 +47,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: true,
-    sameSite: 'none',
+    sameSite: 'lax',
     maxAge: hour
   },
   store: MongoStore.create({ mongoUrl: 'mongodb://127.0.0.1/fake_so' })
@@ -122,7 +125,8 @@ router.post('/questions', async (req, res) => {
         await existingTag.save()
         questionTags.push(existingTag)
       } else {
-        existingTag.tagCount++
+        existingTag.tagCount = (existingTag.tagCount || 0) + 1;
+        await existingTag.save();
         questionTags.push(existingTag)
       }
     }
@@ -240,12 +244,13 @@ router.post('/answer/:aid/comments', async (req, res) => {
   try {
     // Extract the answer id from the request parameters
     const { aid } = req.params
-    const { content, username } = req.body
+    const { content, username, userId } = req.body
 
     // Create a new Comment instance with the provided content
     const newComment = new Comment({
       content,
-      username
+      username,
+      userId
     })
 
     // Save the new comment to the database
@@ -270,12 +275,13 @@ router.post('/question/:qid/comments', async (req, res) => {
   try {
     // Extract the question id from the request parameters
     const { qid } = req.params
-    const { content, username } = req.body
+    const { content, username, userId } = req.body
 
     // Create a new Comment instance with the provided content
     const newComment = new Comment({
       content,
-      username
+      username,
+      userId
     })
 
     // Save the new comment to the database
@@ -575,14 +581,27 @@ router.put('/answers/:aId/downvote', async (req, res) => {
 })
 
 // userController router handlers
-router.post('/register', userController.registerUser)
-router.post('/loginUser', userController.loginUser)
-router.get('/getLoggedIn', userController.getLoggedIn)
-router.get('/logout', userController.logoutUser)
-router.post('/userProfile', userController.getUserProfileData)
-router.post('/username', userController.getUsername)
-router.post('/updateReputation', userController.updateReputation)
-router.post('/deleteQuestion', userController.deleteQuestion)
+router.post('/register', userController.registerUser);
+router.post('/loginUser', userController.loginUser);
+router.get('/getLoggedIn', userController.getLoggedIn);
+router.get('/logout', userController.logoutUser);
+router.get('/testing', userController.testing); // TODO: remove this
+
+router.post('/userProfile', userController.getUserProfileData);
+router.get('/allUsers', userController.getUsernamesAndIds);
+
+router.post('/deleteQuestion', userController.deleteQuestion);
+router.post('/editQuestion', userController.editQuestion);
+router.post('/deleteAnswer', userController.deleteAnswer);
+router.post('/getAnswer', userController.getAnswer);
+router.post('/editAnswer', userController.editAnswer);
+router.post('/verifyEditableTag', userController.verifyEditableTag);
+router.post('/editTag', userController.editTag);
+router.post('/deleteTag', userController.deleteTag);
+router.post('/deleteUser', userController.deleteUser);
+
+router.post('/username', userController.getUsername);
+router.post('/updateReputation', userController.updateReputation);
 
 // start server
 const server = app.listen(8000, () => {

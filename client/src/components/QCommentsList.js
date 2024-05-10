@@ -94,7 +94,7 @@ export default function QCommentsList(props) {
     try {
       // Send POST request to add new comment
 
-      await axios.post(`http://localhost:8000/question/${qid}/comments`, { content: newComment, username:username }, {
+      await axios.post(`http://localhost:8000/question/${qid}/comments`, { content: newComment, username:username, userId: userId }, {
         headers: {
             'Content-Type': 'application/json'
         }
@@ -130,12 +130,14 @@ export default function QCommentsList(props) {
       console.error('Error updating votes:', error);
     }
   };
+
+  const sortedComments = comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(startIndex, endIndex);
   
   return (
     <div className="comments-container">
       {/* Display current comments */}
       <div className="comments-list">
-        {comments.slice(startIndex, endIndex).map((comment) => (
+        {sortedComments.map((comment) => (
           <div key={comment._id} className="q-comment-item">
             <button className="qcomment-upvote-btn" onClick={() => handleUpvote(comment._id)} disabled={!isLoggedIn}>Upvote</button>
             <span className="cVotes">{comment.votes}</span>

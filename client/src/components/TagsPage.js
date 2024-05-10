@@ -26,6 +26,7 @@ export default function TagsPage(props) {
             });
     }, []);    
 
+    // TOOD: use axios to get tag count instead
     function countTagUsage(questions) {
         const tagCounts = {};
         questions.forEach(question => {
