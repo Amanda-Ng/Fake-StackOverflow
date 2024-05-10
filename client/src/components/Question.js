@@ -9,6 +9,8 @@ export default function Question(props) {
   const views = q.views;
   const id = q._id; 
   const askDate = q.ask_date_time;
+  const votes = q.votes;
+  // const uId = props.uId;
   
   // format each tag for a question
   const tList = q.tags.map(tag => (
@@ -19,6 +21,7 @@ export default function Question(props) {
       <span className="question-stats-container">
         <div className="question-stats">{numAnswers} answers</div>
         <div className="question-stats">{views} views</div>
+        <div>Votes: {votes}</div>
       </span>
       <span className="question-title-container">
           <button className="question-title" key={id} onClick={() => props.changeActive("Answers", id)}>{title}</button>

@@ -2,6 +2,7 @@
 // Start the mongoDB service as a background process before running the script
 // Pass admin user's email as the first argument
 // Pass the admin user's password as the second argument
+// For example: nodemon server/init.js admin@gmail.com 1
 // let userArgs = process.argv.slice(2);
 let adminEmail = process.argv[2];
 let adminPassword = process.argv[3];

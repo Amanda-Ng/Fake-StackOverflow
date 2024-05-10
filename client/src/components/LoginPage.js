@@ -36,11 +36,7 @@ export default function LoginPage(props) {
         setNotif(response.data.message);
         return false;
       }
-      setNotif("Successful login");
-      // delay changing active page to show successful notification message
-      setTimeout(() => {
-        props.changeActive("Questions");
-      }, 1000);
+      props.changeActive("Questions");
     }
     catch(error) {
       console.error('Error verifying credentials:', error);
