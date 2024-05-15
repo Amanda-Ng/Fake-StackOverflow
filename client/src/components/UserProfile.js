@@ -121,7 +121,7 @@ export default function UserProfile(props) {
     catch(error) {
       console.error('Error deleting answer:', error);
     }
-    // // to refresh the data shown after an answer is deleted
+    // to refresh the data shown after an answer is deleted
     fillProfileData();
   }
 
@@ -177,22 +177,10 @@ export default function UserProfile(props) {
       console.error('Error deleting user:', error);
     }
   }
-  // TODO: remove this when done testing
-  // const testingFunction = async () => {
-  //   try {
-  //     const res = await axios.get("http://localhost:8000/testing", {withCredentials: true});
-  //     console.log(res.data);
-  //   }
-  //   catch(error) {
-  //     console.log(`ERROR: ${error}`);
-  //   }
-  // }
 
   return (
     <>
     <div id="user-profile">
-      {/* TODO: remove this when done testing */}
-    {/* <button onClick={testingFunction}>TESTING BUTTON1</button> */}
       {profileData && (
         <>
         <h1 className="username">{profileData.username}</h1>
@@ -349,7 +337,6 @@ async function retrieveProfileData(newUserId) {
   }
 }
 
-// TODO: verify all cases
 function formatTime(date) {
   const now = new Date();
   date = new Date(date); // JSON passes everything as Strings, so convert to Date here

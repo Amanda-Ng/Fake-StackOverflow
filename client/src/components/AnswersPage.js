@@ -113,7 +113,7 @@ export default function AnswersPage(props) {
       const response = await axios.get(`http://localhost:8000/questions/${qid}`);
       setQuestion(response.data); // Update state with fetched question
 
-      const res = await axios.post("http://localhost:8000/updateReputation", { userId: question.userId, changeOfPoints: 5 }, {
+      await axios.post("http://localhost:8000/updateReputation", { userId: question.userId, changeOfPoints: 5 }, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -133,7 +133,7 @@ export default function AnswersPage(props) {
         const response = await axios.get(`http://localhost:8000/questions/${qid}`);
         setQuestion(response.data); // Update state with fetched question
 
-        const res = await axios.post("http://localhost:8000/updateReputation", { userId: question.userId, changeOfPoints: -10 }, {
+        await axios.post("http://localhost:8000/updateReputation", { userId: question.userId, changeOfPoints: -10 }, {
           headers: {
             'Content-Type': 'application/json'
           }
@@ -153,7 +153,7 @@ export default function AnswersPage(props) {
         const response = await axios.get(`http://localhost:8000/questions/${qid}/answers`);
         setAnswers(response.data); // Update state with fetched answers
 
-        const res = await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: 5 }, {
+        await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: 5 }, {
           headers: {
             'Content-Type': 'application/json'
           }
@@ -173,7 +173,7 @@ export default function AnswersPage(props) {
         const response = await axios.get(`http://localhost:8000/questions/${qid}/answers`);
         setAnswers(response.data); // Update state with fetched answers
 
-        const res = await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: -10 }, {
+        await axios.post("http://localhost:8000/updateReputation", { userId, changeOfPoints: -10 }, {
           headers: {
             'Content-Type': 'application/json'
           }

@@ -52,7 +52,7 @@ export default function Modal(props) {
           return;
         }
       }
-      const res = await axios.post('http://localhost:8000/editQuestion', {
+      await axios.post('http://localhost:8000/editQuestion', {
         questionId: modalQuestion._id,
         newQuestionInput: questionInput,
         editedTags,
@@ -62,7 +62,6 @@ export default function Modal(props) {
               'Content-Type': 'application/json'
           }
       });
-      console.log(res.data);
     } catch (error) {
         console.error('Error editing question:', error);
     }

@@ -123,12 +123,7 @@
   color: rgb(67, 126, 228);
   text-decoration: underline;
   font-weight: bold;
-  /* cursor: pointer; */
 }
 .profile-tag-box-link, .profile-tag-box-count {
   margin-top: 5px;
 }
-/* .profile-tag-box:hover {
-  background-color: rgb(241, 241, 241);
-  transition: background-color, 0.5s;
-} */

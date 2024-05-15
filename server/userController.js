@@ -8,9 +8,6 @@ const Comment = require('./models/comments.js')
 
 const userController = {}
 
-// TODO: change status codes from 200 to 401
-// 200 for testing and to allow alerts to pop-up
-
 userController.registerUser = async (req, res) => {
   const { username, email, password, rePassword } = req.body
 
@@ -73,15 +70,12 @@ userController.loginUser = async (req, res) => {
       return res.status(200).json({ message: 'Wrong password' })
     }
     req.session.userId = userData._id
-    // const userId = userData._id;
-    // req.session.user = { userId, loggedIn: true };
     try {
       await req.session.save();
     } catch (err) {
         console.error('Error saving to session storage: ', err);
     }
-    // const seshUseId = req.session.userId;
-    // await req.session.save()
+
     return res.status(200).json({ success: true, sess: req.session })
   } catch (error) {
     console.error('Failed to log in:', error)
@@ -89,7 +83,6 @@ userController.loginUser = async (req, res) => {
   }
 }
 
-// TODO: logoutUser requires further testing
 userController.logoutUser = async (req, res) => {
   const collection = connection.db.collection('sessions')
   // delete all sessions (there should only be 1)
@@ -97,13 +90,6 @@ userController.logoutUser = async (req, res) => {
   // Date(0) returns a date from 1970 so the cookie is expired
   res.cookie('token', '', { expires: new Date(0) })
   return res.json({ success: true })
-}
-// TODO: remove this
-userController.testing = async (req, res) => {
-  const session = req.sessionID;
-  const sessionUser = req.session.user;
-  // MongoStore.get(req.sessionID)
-  return res.status(200).json({ success: true, session, sessionUser })
 }
 
 userController.getLoggedIn = async (req, res) => {
@@ -349,7 +335,6 @@ userController.editTag = async (req, res) => {
   }
 }
 
-// TODO: verify that a question without a tag will not cause errors
 userController.deleteTag = async (req, res) => {
   try {
     const { tagId } = req.body;

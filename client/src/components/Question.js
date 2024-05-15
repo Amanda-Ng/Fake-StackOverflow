@@ -10,7 +10,6 @@ export default function Question(props) {
   const id = q._id; 
   const askDate = q.ask_date_time;
   const votes = q.votes;
-  // const uId = props.uId;
   
   // format each tag for a question
   const tList = q.tags.map(tag => (

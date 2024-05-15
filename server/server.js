@@ -4,7 +4,6 @@
 // The server should run on localhost port 8000.
 // This is where you should start writing server-side code for this application.
 
-// TODO: change app to router in some instances
 const express = require('express')
 
 const { connection } = require('./mongooseConnection.js')
@@ -37,10 +36,8 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 // express session setup must be done before router setup
 // cookie config's maxAge is 1 hour and httpOnly is true by default
-// TODO: review if sameSite config is appropriate
 const hour = 6 * 60 * 10000
 app.use(session({
-  // TODO: fix secret config
   // process.env.SESSION_SECRET
   secret: 'what a secret!',
   resave: false,
@@ -585,7 +582,6 @@ router.post('/register', userController.registerUser);
 router.post('/loginUser', userController.loginUser);
 router.get('/getLoggedIn', userController.getLoggedIn);
 router.get('/logout', userController.logoutUser);
-router.get('/testing', userController.testing); // TODO: remove this
 
 router.post('/userProfile', userController.getUserProfileData);
 router.get('/allUsers', userController.getUsernamesAndIds);
